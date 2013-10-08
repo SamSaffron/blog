@@ -1,0 +1,23 @@
+<div class="post">
+	<div class="postTitle">
+    <h2><a href=''><%= post.title %></a></h2>
+		<p>
+		<%= distance_of_time_in_words_to_now post.created_at -%> ago
+		</p>
+	</div>
+	<div class="postBody">
+		<p>
+      This is the summary
+		</p>
+		<p class="readMore">
+      <%= link_to "Continue Reading", "/" %>
+		</p>
+	</div>
+	<div class="postFooter">
+		<p>
+			Posted by: Sam&nbsp;&nbsp;&nbsp;&nbsp;
+			<%= link_to "Permalink", "/" %> |
+      <%= link_to "Comments" + (post.reply_count==0?"":" (#{post.reply_count})") , "/" + "#commentsTitle" %>
+		</p>
+	</div>
+</div>
