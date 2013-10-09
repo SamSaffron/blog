@@ -1,23 +1,19 @@
-<div class="post">
-	<div class="postTitle">
-    <h2><a href=''><%= post.title %></a></h2>
-		<p>
-		<%= distance_of_time_in_words_to_now post.created_at -%> ago
-		</p>
-	</div>
-	<div class="postBody">
-		<p>
-      This is the summary
-		</p>
-		<p class="readMore">
-      <%= link_to "Continue Reading", "/" %>
-		</p>
-	</div>
-	<div class="postFooter">
-		<p>
-			Posted by: Sam&nbsp;&nbsp;&nbsp;&nbsp;
-			<%= link_to "Permalink", "/" %> |
-      <%= link_to "Comments" + (post.reply_count==0?"":" (#{post.reply_count})") , "/" + "#commentsTitle" %>
-		</p>
-	</div>
+<div class="comment" id="comment-<%=post.post_number%>">
+  <div class="commentTitle">
+    <%= user_link(post.user) %>
+    <span class="date"><%= age post.created_at -%></span>
+  </div>
+  <div class="commentRest">
+    <div class="commentGravatar">
+      <img alt="<%=post.user.name%>" class="gravatar" height="64" src="<%= post.user.avatar_template.gsub("{size}", "60") %>" width="64">
+    </div>
+    <div class="commentBody">
+      <%= post.cooked.html_safe %>
+    </div>
+    <div class="clear">
+    </div>
+  </div>
+  <div class="clear">
+  </div>
 </div>
+

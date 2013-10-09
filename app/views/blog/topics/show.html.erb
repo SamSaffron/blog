@@ -1,0 +1,17 @@
+<% content_for (:title) do %>
+<%= @topic.title %>
+<% end %>
+
+<%= render :partial => "topic", :locals  => {:topic => @topic, :post => @posts.first } %>
+<h2 id='comments'>
+  Comments
+</h2>
+<%= render :partial => "blog/posts/post", :collection => @posts[1..-1] %>
+
+<hr>
+<button class="thoughtbot" onclick="JavaScript: window.location ='http://<%=::BLOG_DISCOURSE%>/t/<%=@topic.slug%>/<%=@topic.id%>/<%=@posts[-1].post_number%>'">Leave a Comment</button>
+<p>
+  <small>
+    comments powered by <a href="http://<%=::BLOG_DISCOURSE%>">Discourse</a>
+  </small>
+</p>

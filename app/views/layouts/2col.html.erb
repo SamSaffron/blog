@@ -64,9 +64,9 @@
     _gaq.push(['_setSiteSpeedSampleRate', 20]);
 
     $LAB
-    .script('http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js')
+    .script('http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
     .wait()
-    .script('<%= asset_path('application.js')%>')
+    .script('http://cdnjs.cloudflare.com/ajax/libs/highlight.js/7.3/highlight.min.js')
     .wait(function(){$.each(q,function(i,f){$(f)})})
     .script('http://www.google-analytics.com/ga.js');
   </script>
