@@ -57,9 +57,27 @@ def create_topic(user,result)
   p result["permalink"]
   comments = @client.query("select * from comments where post_id = #{result["id"]} and approved order by created_at asc").to_a
 
+  responses = @client.query("select comment_id, body, created_at from comment_responses
+                              where comment_id in (select id from comments where post_id = #{result["id"]}) ").to_a
+  map = {}
+  responses.each do |response|
+    map[response["comment_id"]] = response
+  end
+
   comments.each do |c|
     user = ensure_user(c["name"], c["email"], c["website"])
-    PostCreator.create(user, topic_id: post.topic_id, raw: c["body"], created_at: c["created_at"], updated_at: c["created_at"], skip_validations: true)
+    post = PostCreator.create(user, topic_id: post.topic_id, raw: c["body"], created_at: c["created_at"], updated_at: c["created_at"], skip_validations: true)
+
+    if response = map[c["id"]]
+      p post.post_number
+
+      PostCreator.create(@admin, topic_id: post.topic_id,
+                                raw: response["body"],
+                                created_at: response["created_at"],
+                                updated_at: response["created_at"],
+                                reply_to_post_number: post.post_number,
+                                skip_validations: true)
+    end
   end
 end
 
