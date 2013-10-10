@@ -43,11 +43,13 @@ after_initialize do
     before_save :ensure_permalink
 
     def ensure_permalink
-      meta_data["permalink"] ||= (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
+      if meta_data
+        meta_data["permalink"] ||= (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
+      end
     end
 
     def blog_bake_summary
-      if summary = meta_data["summary"]
+      if meta_data && summary = meta_data["summary"]
         meta_data["cooked_summary"] = PrettyText.cook(summary)
       end
     end
