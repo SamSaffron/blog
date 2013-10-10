@@ -20,7 +20,7 @@ after_initialize do
   require_dependency "plugin/filter"
 
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
-    if post.post_number == 1 && post.topic.archetype == "regular"
+    if post.post_number == 1 && post.topic && post.topic.archetype == "regular"
       split = cooked.split("<hr>")
 
       # possibly defer this ... not sure
