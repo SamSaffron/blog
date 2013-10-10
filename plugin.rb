@@ -13,6 +13,8 @@ module ::Blog
   end
 end
 
+Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
+
 after_initialize do
 
   class BlogConstraint

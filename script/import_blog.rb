@@ -69,7 +69,6 @@ def create_topic(user,result)
     post = PostCreator.create(user, topic_id: post.topic_id, raw: c["body"], created_at: c["created_at"], updated_at: c["created_at"], skip_validations: true)
 
     if response = map[c["id"]]
-      p post.post_number
 
       PostCreator.create(@admin, topic_id: post.topic_id,
                                 raw: response["body"],
@@ -86,5 +85,7 @@ results = @client.query("select * from posts where published order by created_at
 results.each do |r|
   create_topic(@admin, r)
 end
+
+Topic.exec_sql('update topics set bumped_at = (select max(created_at) from posts where topic_id = topics.id)')
 
 
