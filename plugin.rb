@@ -20,11 +20,11 @@ after_initialize do
   require_dependency "plugin/filter"
 
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
-    if post.post_number == 1 && post.topic && post.topic.meta_data && post.topic.archetype == "regular"
+    if post.post_number == 1 && post.topic && post.topic.archetype == "regular"
       split = cooked.split("<hr>")
 
       if split.length > 1
-        post.topic.meta_data["summary"] = split[0]
+        post.topic.add_meta_data("summary",split[0])
         post.topic.save
         cooked = split[1..-1].join("<hr>")
       end
@@ -42,15 +42,20 @@ after_initialize do
     before_save :blog_bake_summary
     before_save :ensure_permalink
 
+    # see: https://github.com/rails/rails/issues/12497
+    def add_meta_data(key,value)
+      self.meta_data = (self.meta_data || {}).merge(key => value)
+    end
+
     def ensure_permalink
-      if meta_data
-        meta_data["permalink"] ||= (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
+      unless meta_data && meta_data["permalink"]
+        add_meta_data("permalink", (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug)
       end
     end
 
     def blog_bake_summary
       if meta_data && summary = meta_data["summary"]
-        meta_data["cooked_summary"] = PrettyText.cook(summary)
+        add_meta_data("cooked_summary", PrettyText.cook(summary))
       end
     end
   end
