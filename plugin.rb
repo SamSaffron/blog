@@ -3,6 +3,10 @@
 # version: 0.1
 # authors: Sam Saffron
 
+gem "multi_xml","0.5.5"
+gem "httparty", "0.12.0"
+gem "rubyoverflow", "1.0.2"
+
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
 ::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
 
@@ -16,6 +20,9 @@ end
 Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
 
 after_initialize do
+
+  load File.expand_path("../app/jobs/blog_update_twitter.rb", __FILE__)
+  load File.expand_path("../app/jobs/blog_update_stackoverflow.rb", __FILE__)
 
   require_dependency "plugin/filter"
 
