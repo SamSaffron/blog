@@ -8,7 +8,7 @@ module Blog
     before_filter :cache_anon
 
     def cache_anon
-      Middleware::AnonymousCache.anon_cache(request.env, 1.minute)
+      Middleware::AnonymousCache.anon_cache(request.env, 30.seconds)
     end
 
     def show_sidebar
