@@ -186,6 +186,13 @@ blockquote:before, blockquote:after {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
+  font-size: 12px;
+}
+
+#sidebar .section p
+{
+  margin-top: 10px;
+  line-height: 16px;
 }
 
 #sidebar .section h3
