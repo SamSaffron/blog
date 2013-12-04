@@ -39,7 +39,7 @@ module Blog
 
     def visible_topics
       Topic.secured.visible.listable_topics
-        .where("topics.title not like 'Category definition%'")
+        .where("meta_data ? 'permalink' AND topics.title not like 'Category definition%'")
     end
 
     def topics_for_feed
