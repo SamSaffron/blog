@@ -22,11 +22,15 @@ module Blog
     def latest_answers
       cached = Rails.cache.read("so_answers")
       cached ? cached[:answers] : []
+    rescue
+      []
     end
 
     def latest_tweets
       cached = Rails.cache.read("tweets")
       cached ? cached[:tweets][0..5] : []
+    rescue
+      []
     end
 
   end
