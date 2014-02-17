@@ -1,6 +1,6 @@
 module Blog
   class UpdateTwitter < ::Jobs::Scheduled
-    recurrence { hourly }
+    every 1.hour
 
     def execute(args)
       tweets = TwitterApi.user_timeline('samsaffron')

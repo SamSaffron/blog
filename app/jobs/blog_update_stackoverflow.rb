@@ -1,6 +1,6 @@
 module Blog
   class UpdateStackOverflow < ::Jobs::Scheduled
-    recurrence { hourly }
+    every 1.hour
 
     def execute(args)
       payload = Rubyoverflow::Answers.retrieve_by_user(17174, :sort => :creation, :pagesize => 5)
