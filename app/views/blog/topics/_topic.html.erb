@@ -10,7 +10,7 @@
       <%= post.cooked.html_safe %>
     <% else %>
     <%=
-      if summary=topic.meta_data["cooked_summary"]
+      if summary=topic.custom_fields["cooked_summary"]
         summary.html_safe
       end
     %>
@@ -22,7 +22,7 @@
 	<div class="postFooter">
 		<p>
 			Posted by: Sam&nbsp;&nbsp;&nbsp;&nbsp;
-			<%= link_to "Permalink", topic.meta_data["permalink"] %> |
+			<%= link_to "Permalink", topic.custom_fields["permalink"] %> |
       <%= link_to "Comments" + (topic.posts_count==1?"":" (#{topic.posts_count-1})") , permalink(topic) + "#comments" %>
 		</p>
 	</div>

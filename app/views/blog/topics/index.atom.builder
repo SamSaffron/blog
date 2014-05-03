@@ -13,11 +13,11 @@ xml.feed "xmlns" => "http://www.w3.org/2005/Atom" do
   @topics.each do |topic|
     xml.entry do
       xml.title   topic.title
-      xml.link    "rel" => "alternate", "href" => @url + permalink(topic)
-      xml.id      @url + permalink(topic)
+      xml.link    "rel" => "alternate", "href" => @url + topic.permalink
+      xml.id      @url + topic.permalink
       xml.updated topic.created_at.strftime "%Y-%m-%dT%H:%M:%SZ"
       xml.author  { xml.name "Sam Saffron" }
-      xml.summary topic.meta_data["cooked_summary"]
+      xml.summary topic.custom_fields["cooked_summary"]
       xml.content "type" => "html" do
         xml.text! topic.cooked
       end

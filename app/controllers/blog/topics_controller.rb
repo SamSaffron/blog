@@ -22,7 +22,8 @@ module Blog
     end
 
     def permalink
-      @topic = visible_topics.where("meta_data @> ?", "permalink => #{request.path}").first
+      @topic = visible_topics.where("id = (select topic_id from topic_custom_fields
+                                      where name = 'permalink' and value = ?)", request.path).first
       if @topic
         @posts = Post.where(topic_id: @topic.id)
                      .where(hidden: false)
@@ -39,16 +40,19 @@ module Blog
 
     def visible_topics
       Topic.secured.visible.listable_topics
-        .where("meta_data ? 'permalink' AND topics.title not like 'Category definition%'")
+        .where("exists (select 1 from topic_custom_fields c where name = 'permalink' and topics.id = c.topic_id)
+                 AND topics.title not like 'Category definition%'")
     end
 
     def topics_for_feed
       visible_topics
         .by_newest
         .joins(:posts)
+        .joins(:_custom_fields)
         .where("posts.post_number = 1")
+        .where("topic_custom_fields.name = 'permalink'")
         .limit(10)
-        .select("meta_data, posts.cooked, topics.created_at, title")
+        .select("posts.cooked, topics.created_at, title, topic_custom_fields.value permalink")
     end
 
   end

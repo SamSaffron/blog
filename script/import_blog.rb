@@ -51,7 +51,7 @@ def create_topic(user,result)
                         updated_at: result["updated_at"],
                         raw: result["body"],
                         title: result["title"],
-                        meta_data: {permalink: result["permalink"], summary: result["summary"]},
+                        custom_fields: {permalink: result["permalink"], summary: result["summary"]},
                         skip_validations: true)
 
   p result["permalink"]

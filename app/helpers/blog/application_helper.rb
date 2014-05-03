@@ -3,7 +3,7 @@ require_dependency "twitter_api"
 module Blog
   module ApplicationHelper
     def permalink(topic)
-      topic.meta_data["permalink"]
+      topic.custom_fields["permalink"]
     end
 
     def user_link(user)

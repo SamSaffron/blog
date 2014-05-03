@@ -31,7 +31,7 @@ after_initialize do
       split = cooked.split("<hr>")
 
       if split.length > 1
-        post.topic.add_meta_data("summary",split[0])
+        post.topic.custom_fields["summary"] = split[0]
         post.topic.save
         cooked = split[1..-1].join("<hr>")
       end
@@ -49,20 +49,15 @@ after_initialize do
     before_save :blog_bake_summary
     before_save :ensure_permalink
 
-    # see: https://github.com/rails/rails/issues/12497
-    def add_meta_data(key,value)
-      self.meta_data = (self.meta_data || {}).merge(key => value)
-    end
-
     def ensure_permalink
-      unless meta_data && meta_data["permalink"]
-        add_meta_data("permalink", (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug)
+      unless custom_fields["permalink"]
+        custom_fields["permalink"] =  (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
       end
     end
 
     def blog_bake_summary
-      if meta_data && summary = meta_data["summary"]
-        add_meta_data("cooked_summary", PrettyText.cook(summary))
+      if summary = custom_fields["summary"]
+        custom_fields["cooked_summary"] = PrettyText.cook(summary)
       end
     end
   end

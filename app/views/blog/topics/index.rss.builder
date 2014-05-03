@@ -13,7 +13,7 @@ xml.rss(:version=>"2.0") do
         xml.title(topic.title)
         xml.description(topic.cooked)
         xml.pubDate(topic.created_at.strftime("%a, %d %b %Y %H:%M:%S %z"))
-        xml.link(@url + permalink(topic))
+        xml.link(@url + topic.permalink)
       end
     end
   end
