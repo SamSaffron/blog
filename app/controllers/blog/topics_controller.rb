@@ -1,7 +1,6 @@
 module Blog
   class TopicsController < Blog::ApplicationController
     def index
-
       respond_to do |format|
         format.html {
           @topics = visible_topics.by_newest
@@ -40,8 +39,8 @@ module Blog
 
     def visible_topics
       Topic.secured.visible.listable_topics
-        .where("exists (select 1 from topic_custom_fields c where name = 'permalink' and topics.id = c.topic_id)
-                 AND topics.title not like 'Category definition%'")
+        .where("exists (select 1 from topic_custom_fields f where name = 'permalink' and topics.id = f.topic_id)")
+        .where("not exists(select c.topic_id from categories c where c.topic_id = topics.id)")
     end
 
     def topics_for_feed

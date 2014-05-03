@@ -28,7 +28,7 @@ after_initialize do
 
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
     if post.post_number == 1 && post.topic && post.topic.archetype == "regular"
-      split = cooked.split("<hr>")
+      split = cooked.split("<hr/>")
 
       if split.length > 1
         post.topic.custom_fields["summary"] = split[0]
