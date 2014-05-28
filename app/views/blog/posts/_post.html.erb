@@ -5,7 +5,7 @@
   </div>
   <div class="commentRest">
     <div class="commentGravatar">
-      <img alt="<%=post.user.name%>" class="gravatar" height="64" src="<%= post.user.avatar_template.gsub("{size}", "60") %>" width="64">
+      <img alt="<%=post.user.name%>" class="gravatar" height="64" src="//<%= ::BLOG_DISCOURSE %><%= post.user.avatar_template.gsub("{size}", "60") %>" width="64">
     </div>
     <div class="commentBody">
       <%= post.cooked.html_safe %>
