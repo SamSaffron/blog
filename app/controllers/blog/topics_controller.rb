@@ -27,11 +27,11 @@ module Blog
         @posts = Post.where(topic_id: @topic.id)
                      .where(hidden: false)
                      .by_post_number
-                     .includes(:user)
+                     .includes(:user => :user_profile)
                      .to_a
         render :action => "show"
       else
-        render :text => "<p>404 - Page not found.</p>", :status => 404
+        render :text => "<p>404 - Blog post not found.</p>", :status => 404
       end
     end
 

@@ -8,8 +8,8 @@ module Blog
 
     def user_link(user)
       name = user.name || user.username
-      if user.website.present?
-        link_to name, user.website
+      if user.user_profile.website.present?
+        link_to name, user.user_profile.website
       else
         name
       end.html_safe
