@@ -3,9 +3,10 @@
 # version: 0.1
 # authors: Sam Saffron
 
-gem "multi_xml","0.5.5"
-gem "httparty", "0.12.0"
-gem "rubyoverflow", "1.0.2"
+# gem "multi_xml","0.5.5"
+# gem "httparty", "0.12.0"
+# TODO consider serel
+# gem "serel", "1.2.0"
 
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
 ::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
@@ -17,7 +18,7 @@ module ::Blog
   end
 end
 
-Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
+Rails.configuration.assets.precompile += ['LAB.js', 'blog.scss']
 
 after_initialize do
 
@@ -28,7 +29,7 @@ after_initialize do
 
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
     if post.post_number == 1 && post.topic && post.topic.archetype == "regular"
-      split = cooked.split("<hr/>")
+      split = cooked.split(/<hr\/?>/)
 
       if split.length > 1
         post.topic.custom_fields["summary"] = split[0]

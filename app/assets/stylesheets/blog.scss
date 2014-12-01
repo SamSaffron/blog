@@ -165,14 +165,14 @@ blockquote:before, blockquote:after {
   margin-left: 10px;
 }
 
-.so-answers, .tweets
+.section ul
 {
   font: Arial, Helvetica, "Nimbus Sans L", sans-serif;
   font-size: 12px;
   margin-top: 8px;
 }
 
-.so-answers li, .tweets li
+.section li
 {
   margin-top: 8px;
   line-height: 16px;
@@ -605,59 +605,238 @@ button.thoughtbot {
     -webkit-box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4);
     box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4); }
 
+// onebox
+
+a.loading-onebox {
+  background: {
+    image: image-url("spinner_96.gif");
+    position: 0;
+    size: 20px;
+    height: 25px;
+    repeat: no-repeat;
+  };
+  padding-left: 25px;
+}
+
+
 .onebox-result {
   margin-top: 15px;
   padding: 12px 25px 12px 12px;
-  border-left: 5px solid #bebebe;
-  background: #eee;
-  font-size: 14px; }
-  .onebox-result > .source {
+  font-size: 14px;
+  > .source {
     margin-bottom: 12px;
     margin-right: 10px;
     display: block;
-    color: black;
     position: relative;
-    height: 20px; }
-    .onebox-result > .source .info {
-      position: absolute;
-      font-size: 14px; }
-      .onebox-result > .source .info a {
+    height: 20px;
+    .info {
+      a {
         color: black;
         text-decoration: none;
-        padding-right: 10px; }
-      .onebox-result > .source .info img.favicon {
-        margin-right: 3px; }
-  .onebox-result .onebox-result-body {
-    line-height: 22px;
-    padding-top: 5px; }
-    .onebox-result .onebox-result-body img {
-      max-width: 200px; }
-    .onebox-result .onebox-result-body h3, .onebox-result .onebox-result-body h4 {
-      margin: 0px !important; }
-    .onebox-result .onebox-result-body img.thumbnail {
-      max-width: 25%;
-      height: auto; }
-    .onebox-result .onebox-result-body code {
-      max-height: 400px; }
-    .onebox-result .onebox-result-body img {
-      max-width: 30%;
+        padding-right: 10px;
+      }
+      position: absolute;
+      font-size: 14px;
+      img.favicon {
+        margin-right: 3px;
+      }
+    }
+  }
+
+
+  .onebox-result-body {
+    padding-top: 5px;
+    img {
       max-height: 80%;
+      max-width: 25%;
+      height: auto;
       float: left;
-      margin-right: 10px; }
-    .onebox-result .onebox-result-body .metrics {
+      margin-right: 10px;
+    }
+    h3, h4 {
+      margin: 0 !important;
+    }
+    code {
+      max-height: 400px;
+    }
+    .metrics {
       clear: both;
-      padding-bottom: 25px; }
-      .onebox-result .onebox-result-body .metrics .metric {
+      padding-bottom: 25px;
+      .metric {
         display: inline-block;
         padding-left: 33px;
-        float: left; }
+        float: left;
+      }
+    }
+  }
+}
 
-.onebox-result .onebox-result-body img.verdict {
-  float: none;
-  margin-right: 7px; }
-.onebox-result .onebox-result-body img.popcorn {
-  float: none;
-  margin-left: 20px;
-  margin-right: 5px; }
+// RottenTomatoes Onebox
+.onebox-result {
+  .onebox-result-body {
+    img.verdict {
+      float: none;
+      margin-right: 7px;
+    }
+    img.popcorn {
+      float: none;
+      margin-left: 20px;
+      margin-right: 5px;
+    }
+  }
+}
+
+@mixin onebox-favicon($class, $image) {
+  &.#{$class} .source {
+    background-image: image-url("favicons/#{$image}.png");
+    background-repeat: no-repeat;
+    padding-left: 20px;
+  }
+}
+
+aside.onebox {
+  padding: 12px 25px 12px 12px;
+  font-size: 14px;
+  background-color: #eaeaea;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  margin-top: 10px;
+
+  header {
+    a[href] {
+      text-decoration: none;
+      color: #444;
+    }
+  }
+
+  @include onebox-favicon('stackexchange', 'stackexchange');
+  @include onebox-favicon('twitterstatus', 'twitter');
+  @include onebox-favicon('wikipedia', 'wikipedia');
+  @include onebox-favicon('githubblob', 'github');
+  @include onebox-favicon('amazon', 'amazon');
 
 
+  .onebox-body {
+    clear: both;
+
+    h3, h4 {
+      font-size: 1.17em;
+      margin: 10px 0 !important;
+    }
+
+    a[href] {
+      text-decoration: none;
+    }
+
+    a[href]:visited {
+    }
+
+    img {
+      max-height: 80%;
+      max-width: 25%;
+      height: auto;
+      float: left;
+      margin-right: 10px;
+    }
+  }
+}
+
+.onebox-avatar {
+  height: 90px !important;
+  width: 90px !important;
+}
+
+blockquote {
+  aside.onebox {
+  }
+}
+
+// -- Onebox Github Code Blob --
+pre.onebox code ol.lines li:before {
+  position: absolute;
+  display:inline-block;
+  width:35px;
+  left: -40px;
+  background: #F7F7F7;
+  color:#AFAFAF;
+  text-align:right;
+  padding-right:5px;
+  font-size:12px;
+  line-height: 1.9em;
+  content: counter(li-counter);
+  counter-increment: li-counter;
+}
+
+
+pre.onebox code ol{
+	margin-left:0px;
+	line-height:1.5em;
+}
+pre.onebox code li{
+	background-color:#fff;
+	padding-left:5px;
+}
+
+pre.onebox code ol.lines{
+	position:relative;
+	margin-left: 40px;
+}
+
+pre.onebox code ol.lines li {
+	list-style-type: none;
+	padding-left: 5px;
+	margin-left: 0px;
+	border-left: 1px solid #CFCFCF;
+	min-height: 1.5em; //show empty li lines
+  white-space: pre;
+}
+
+pre.onebox code li.selected{
+	background-color:#F8EEC7
+}
+
+pre.onebox code {
+ white-space: normal;
+}
+
+//Onebox - Github - Pull request
+.onebox-body .github-commit-status {
+  background: #F5F5F5;
+  border-radius: 5px;
+  margin:5px 0px 5px 100px;
+  padding: 10px;
+}
+
+.github-commit-stats {
+   margin-top: 5px;
+}
+
+.onebox-body .status_tag {
+  display:inline-block;
+  color:#fff;
+  padding:1px 4px;
+  border-radius:3px;
+  font-weight:bold;
+  margin-bottom:5px;
+  text-transform:capitalize;
+}
+
+.onebox-body .build_status
+{
+  padding: 2px;
+  font-size:12px;
+}
+
+.onebox-body .status_tag.open {
+  background-color:#6cc644;
+}
+.onebox-body .status_tag.merged{
+  background-color:#6e5494;
+}
+.onebox-body .status_tag.closed {
+  background-color:#bd2c00;
+}
+
+.onebox-body .github-content-right{
+  margin-left:100px;
+}
