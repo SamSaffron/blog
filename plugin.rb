@@ -33,7 +33,7 @@ after_initialize do
 
       if split.length > 1
         post.topic.custom_fields["summary"] = split[0]
-        post.topic.save
+        post.topic.save unless post.new_record?
         cooked = split[1..-1].join("<hr>")
       end
     end
