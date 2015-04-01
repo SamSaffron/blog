@@ -220,30 +220,37 @@ a:hover
 	border-bottom-style: none;
 }
 
+pre,code {
+   font-family: "Consolas", "Monaco","Courier New", Courier, monospace;
+}
+
 pre
 {
 	margin: 10px;
 	padding: 10px;
 	background: #eee;
-	font-family: "Courier New", Courier, monospace;
-	line-height: 18px;
+	line-height: 25px;
   max-height: 600px;
   overflow: auto;
   width: auto;
+  font-size: 15px;
+}
+pre code {
+  line-height: 23px;
 }
 
 #content body, #content p,  #content ol, #content ul, #content li, #content h2, #content h3 {
-  font-size:   14px;
-  line-height: 22px;
+  font-size:   17px;
+  line-height: 26px;
   margin: 3px;
-  font-family:  Verdana,Sans-Serif;
-  color: black;
+  font-family:  'Open Sans',Verdana,Sans-Serif;
+  color: #444;
 }
 
 #content p
 {
-	margin-top: 5px;
-	margin-bottom: 12px;
+	margin-top: 10px;
+	margin-bottom: 20px;
 }
 
 #content ul
@@ -267,14 +274,14 @@ pre
 
 #content h1
 {
-	font-size: 22px;
+	font-size: 26px;
 	margin: 15px 0px;
 
 }
 
 #content h2
 {
-	font-size: 20px;
+	font-size: 24px;
 	margin-bottom: 15px;
   margin-top: 25px;
 }
@@ -283,7 +290,7 @@ pre
 #content h3
 {
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: bold;
   margin-top:20px;
 }
@@ -555,8 +562,7 @@ blockquote {
 code
 {
    background-color: #eee;
-   font-family: "Courier New", Courier, monospace;
-   padding: 3px;
+   padding: 0px;
 }
 
  .commentBody blockquote
@@ -606,6 +612,12 @@ button.thoughtbot {
     box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4); }
 
 // onebox
+
+.onebox h4 {
+   text-overflow: ellipsis;
+   overflow: hidden;
+   white-space: nowrap;
+}
 
 a.loading-onebox {
   background: {
@@ -840,3 +852,11 @@ pre.onebox code {
 .onebox-body .github-content-right{
   margin-left:100px;
 }
+
+small {
+  font-size: 10px;
+}
+
+// highlight
+
+.hljs{display:block;overflow-x:auto;padding:0.5em;background:#f0f0f0;-webkit-text-size-adjust:none}.hljs,.hljs-subst,.hljs-tag .hljs-title,.nginx .hljs-title{color:black}.hljs-string,.hljs-title,.hljs-constant,.hljs-parent,.hljs-tag .hljs-value,.hljs-rules .hljs-value,.hljs-preprocessor,.hljs-pragma,.haml .hljs-symbol,.ruby .hljs-symbol,.ruby .hljs-symbol .hljs-string,.hljs-template_tag,.django .hljs-variable,.smalltalk .hljs-class,.hljs-addition,.hljs-flow,.hljs-stream,.bash .hljs-variable,.apache .hljs-tag,.apache .hljs-cbracket,.tex .hljs-command,.tex .hljs-special,.erlang_repl .hljs-function_or_atom,.asciidoc .hljs-header,.markdown .hljs-header,.coffeescript .hljs-attribute{color:#800}.smartquote,.hljs-comment,.hljs-annotation,.diff .hljs-header,.hljs-chunk,.asciidoc .hljs-blockquote,.markdown .hljs-blockquote{color:#888}.hljs-number,.hljs-date,.hljs-regexp,.hljs-literal,.hljs-hexcolor,.smalltalk .hljs-symbol,.smalltalk .hljs-char,.go .hljs-constant,.hljs-change,.lasso .hljs-variable,.makefile .hljs-variable,.asciidoc .hljs-bullet,.markdown .hljs-bullet,.asciidoc .hljs-link_url,.markdown .hljs-link_url{color:#080}.hljs-label,.hljs-javadoc,.ruby .hljs-string,.hljs-decorator,.hljs-filter .hljs-argument,.hljs-localvars,.hljs-array,.hljs-attr_selector,.hljs-important,.hljs-pseudo,.hljs-pi,.haml .hljs-bullet,.hljs-doctype,.hljs-deletion,.hljs-envvar,.hljs-shebang,.apache .hljs-sqbracket,.nginx .hljs-built_in,.tex .hljs-formula,.erlang_repl .hljs-reserved,.hljs-prompt,.asciidoc .hljs-link_label,.markdown .hljs-link_label,.vhdl .hljs-attribute,.clojure .hljs-attribute,.asciidoc .hljs-attribute,.lasso .hljs-attribute,.coffeescript .hljs-property,.hljs-phony{color:#88f}.hljs-keyword,.hljs-id,.hljs-title,.hljs-built_in,.css .hljs-tag,.hljs-javadoctag,.hljs-phpdoc,.hljs-dartdoc,.hljs-yardoctag,.smalltalk .hljs-class,.hljs-winutils,.bash .hljs-variable,.apache .hljs-tag,.hljs-type,.hljs-typename,.tex .hljs-command,.asciidoc .hljs-strong,.markdown .hljs-strong,.hljs-request,.hljs-status{font-weight:bold}.asciidoc .hljs-emphasis,.markdown .hljs-emphasis{font-style:italic}.nginx .hljs-built_in{font-weight:normal}.coffeescript .javascript,.javascript .xml,.lasso .markup,.tex .hljs-formula,.xml .javascript,.xml .vbscript,.xml .css,.xml .hljs-cdata{opacity:0.5}
