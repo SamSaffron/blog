@@ -5,7 +5,7 @@
       <li>
         <%= t[:text].html_safe %>
         <a href="http://twitter.com/samsaffron/statuses/<%=t[:id]%>">
-          <%= time_ago_in_words(t[:date]) + " ago" %>
+          <%= (time_ago_in_words(t[:date]) + " ago") %>
         </a>
       </li>
     <% end %>
@@ -17,7 +17,7 @@
 
 <div class='stackoverflow section'>
   <a href="http://stackexchange.com/users/9321">
-    <img src="http://stackexchange.com/users/flair/9321.png" width="208" height="58"
+    <img src="https://stackexchange.com/users/flair/9321.png" width="208" height="58"
           alt="profile for Sam Saffron on Stack Exchange, a network of free, community-driven Q&A sites"
           title="profile for Sam Saffron on Stack Exchange, a network of free, community-driven Q&A sites">
   </a>
@@ -35,6 +35,9 @@
 <div class='section'>
   <h3>Online content</h3>
   <ul>
+  <li>
+    <a href="https://www.youtube.com/watch?v=aP5NNkzb4og">Off the Rails</a>
+  </li>
   <li>
     <a href="https://www.youtube.com/watch?v=LWyEWUD-ztQ">Measuring Ruby</a>
   </li>
