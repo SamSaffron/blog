@@ -567,13 +567,8 @@ code
   width: 570px;
  }
 
-.lightbox {
-  color: #777;
-  font-family:  'Open Sans',Verdana,Sans-Serif;
-}
-
-.lightbox .filenam {
-  margin-right: 5px;
+.lightbox .meta {
+  display: none;
 }
 
 .tweet {
