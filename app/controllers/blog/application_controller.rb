@@ -5,7 +5,7 @@ module Blog
   class ApplicationController < ActionController::Base
     include CurrentUser
     layout "2col"
-    before_filter :cache_anon
+    before_action :cache_anon
 
     def cache_anon
       Middleware::AnonymousCache.anon_cache(request.env, 30.seconds)

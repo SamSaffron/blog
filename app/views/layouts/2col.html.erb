@@ -34,15 +34,16 @@
 			<div class="clear"></div>
 			<%= render :partial => "layouts/navbar" %>
 		</div>
-		<div id="content">
-			<%= yield %>
+    <div id="content-wrapper">
+      <div id="content">
+        <%= yield %>
+      </div>
+      <% if controller.show_sidebar %>
+      <div id="sidebar">
+        <%= render :partial => "layouts/sidebar" %>
+      </div>
+      <% end %>
     </div>
-    <% if controller.show_sidebar %>
-    <div id="sidebar">
-      <%= render :partial => "layouts/sidebar" %>
-    </div>
-    <% end %>
-    <div class="clear"/>
 		<div id="footer">
 			syndication: <%= link_to "rss", "/posts.rss" %> <%= link_to "atom", "/posts.atom" %>
 		</div>

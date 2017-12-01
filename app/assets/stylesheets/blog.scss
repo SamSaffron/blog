@@ -34,6 +34,10 @@ blockquote:before, blockquote:after {
 	content: "";
 }
 
+body {
+  font-size: 62.5%;
+}
+
 
 /* my styles */
 
@@ -51,7 +55,6 @@ blockquote:before, blockquote:after {
 	max-width: 960px;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 2em;
 	margin-bottom: 25px;
 }
 
@@ -75,7 +78,7 @@ blockquote:before, blockquote:after {
 {
    color: #EEE;
    margin-top:5px;
-   font-size: 40px;
+   font-size: 2.2rem;
    font-family: Arial, Helvetica, sans-serif;
    /*text-shadow: 0px 4px 0px #1a456c;*/
 }
@@ -84,6 +87,7 @@ blockquote:before, blockquote:after {
    color: #ccc;
    margin-top: 11px;
    font-family: Courier New, Arial, Helvetica, sans-serif;
+   font-size: 0.9rem;
 }
 
 #headerLogo .htitle
@@ -97,7 +101,7 @@ blockquote:before, blockquote:after {
   float: right;
   display: block;
   list-style-type: none;
-  font-size: 11px;
+  font-size: 0.7rem;
   color: #bbb;
 }
 
@@ -137,7 +141,7 @@ blockquote:before, blockquote:after {
 	text-decoration: none;
 	float: left;
   font-family: "Helvetica Neue", Arial, Helvetica, "Nimbus Sans L", sans-serif;
-  font-size: 12px;
+  font-size: 1.1rem;
 }
 
 #navbar a:hover
@@ -147,35 +151,43 @@ blockquote:before, blockquote:after {
 }
 
 /* main content style */
+#content-wrapper {
+  display: table;
+  max-width: 960px;
+  width: 100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+}
+
+#content-wrapper:after {
+  content: "";
+  display: table-row;
+  width: 100%;
+}
+
 #content
 {
-  float: left;
-  display:block;
-	max-width: 720px;
-	width: 720px;
-	margin-left: auto;
-	margin-right: auto;
+  display: table-cell;
+  padding-right: 20px;
 }
 
 #sidebar
 {
-  float: left;
-  display: block;
+  display: table-cell;
   width: 230px;
-  margin-left: 10px;
 }
 
 .section ul
 {
   font: Arial, Helvetica, "Nimbus Sans L", sans-serif;
-  font-size: 12px;
+  font-size: 0.85rem;
   margin-top: 8px;
 }
 
 .section li
 {
   margin-top: 8px;
-  line-height: 16px;
+  line-height: 1.1rem;
 }
 
 #sidebar .section
@@ -186,18 +198,18 @@ blockquote:before, blockquote:after {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 0.8rem;
 }
 
 #sidebar .section p
 {
   margin-top: 10px;
-  line-height: 16px;
+  line-height: 1.2rem;
 }
 
 #sidebar .section h3
 {
-  font-size:18px;
+  font-size: 1.2rem;
   font-weight: bold;
   margin-top: 5px;
 }
@@ -233,15 +245,15 @@ pre
   max-height: 600px;
   overflow: auto;
   width: auto;
-  font-size: 15px;
+  font-size: 1.2rem;
 }
 pre code {
-  line-height: 23px;
+  line-height: 1.4rem;
 }
 
 #content body, #content p,  #content ol, #content ul, #content li, #content h2, #content h3 {
-  font-size:   17px;
-  line-height: 26px;
+  font-size:   1.05rem;
+  line-height: 1.6rem;
   margin: 3px;
   font-family:  'Open Sans',Verdana,Sans-Serif;
   color: #444;
@@ -274,25 +286,25 @@ pre code {
 
 #content h1
 {
-	font-size: 26px;
+	font-size: 2rem;
 	margin: 15px 0px;
 
 }
 
 #content h2
 {
-	font-size: 24px;
+	font-size: 1.7rem;
 	margin-bottom: 15px;
-  margin-top: 25px;
+  margin-top: 2.5rem;
 }
 
 
 #content h3
 {
   margin-bottom: 10px;
-  font-size: 22px;
+  font-size: 1.4rem;
   font-weight: bold;
-  margin-top:20px;
+  margin-top:2rem;
 }
 
 
@@ -328,6 +340,7 @@ pre code {
   margin: 0px;
   color: #999;
   padding: 0px 3px 8px;
+  font-size: 0.85rem;
 }
 
 
@@ -356,7 +369,7 @@ pre code {
 
 .readMore a:link , .readMore a:visited
 {
-	font-size: 12px;
+	font-size: 0.7rem;
 	font-style: italic;
 }
 
@@ -513,6 +526,8 @@ input
 	clear: both;
 	border-top: black dotted 1px;
 	margin-top: 40px;
+  padding-top: 2px;
+  font-size: 0.8rem;
 }
 
 /* table styling */
@@ -596,11 +611,11 @@ button.thoughtbot {
   -webkit-box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333333;
   box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333333;
   color: #fff;
-  font: bold 20px/1 "helvetica neue", helvetica, arial, sans-serif;
-  padding: 12px 0 14px 0;
+  font: bold 1.5em "helvetica neue", helvetica, arial, sans-serif;
+  padding: 12px 50px 14px 50px;
   text-align: center;
   text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8);
-  width: 300px; }
+   }
   button.thoughtbot:hover {
     background-color: #f37873;
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f37873), color-stop(50%, #db504d), color-stop(50%, #cb0500), color-stop(100%, #a20601));
@@ -866,6 +881,58 @@ pre.onebox code {
 small {
   font-size: 10px;
 }
+
+// responsive stuff
+@media (max-width: 1000px) , (max-device-width: 500px) {
+  #header {
+    max-width: 100%;
+  }
+  #wrapper {
+    margin: auto;
+  }
+  #headerLogo {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+  }
+  #content-wrapper {
+    margin: 0 10px;
+    width: calc(100% - 20px);
+  }
+  #footer {
+    margin-left: 10px;
+  }
+
+}
+
+code {
+  word-wrap: break-word;
+}
+
+@media (max-device-width: 820px) , (max-device-width: 500px) {
+  #sidebar {
+    display: none;
+  }
+  #headerLogo ul {
+    display: none;
+  }
+}
+
+@media (max-device-width: 500px) {
+
+  #headerLogo {
+    height: 140px;
+  }
+
+  #content ol {
+    margin-left: 50px;
+  }
+
+  html {
+    font-size: 2rem;
+  }
+
+}
+
 
 // highlight
 
