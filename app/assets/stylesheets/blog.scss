@@ -933,6 +933,11 @@ code {
 
 }
 
+// stop giant links breaking my CSS
+a {
+  word-wrap: break-word;
+}
+
 
 // highlight
 
