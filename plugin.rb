@@ -22,6 +22,23 @@ Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
 
 after_initialize do
 
+  # got to patch this class to allow more hostnames
+  class ::Middleware::EnforceHostname
+    def call(env)
+      hostname = env[Rack::Request::HTTP_X_FORWARDED_HOST].presence || env[Rack::HTTP_HOST]
+
+      env[Rack::Request::HTTP_X_FORWARDED_HOST] = nil
+
+      if hostname == ::BLOG_HOST
+        env[Rack::HTTP_HOST] = ::BLOG_HOST
+      else
+        env[Rack::HTTP_HOST] = ::BLOG_DISCOURSE
+      end
+
+      @app.call(env)
+    end
+  end
+
   load File.expand_path("../app/jobs/blog_update_twitter.rb", __FILE__)
   load File.expand_path("../app/jobs/blog_update_stackoverflow.rb", __FILE__)
 
