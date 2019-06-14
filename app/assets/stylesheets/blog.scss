@@ -87,13 +87,12 @@ q:before,
 q:after,
 blockquote:before,
 blockquote:after {
-  content: '';
+  content: "";
 }
 
 body {
   font-size: 62.5%;
 }
-
 
 /* my styles */
 
@@ -178,7 +177,7 @@ body {
   padding: 5px 10px 5px;
   text-decoration: none;
   float: left;
-  font-family: 'Helvetica Neue', Arial, Helvetica, 'Nimbus Sans L', sans-serif;
+  font-family: "Helvetica Neue", Arial, Helvetica, "Nimbus Sans L", sans-serif;
   font-size: 1.1rem;
 }
 
@@ -197,7 +196,7 @@ body {
 }
 
 #content-wrapper:after {
-  content: '';
+  content: "";
   display: table-row;
   width: 100%;
 }
@@ -213,7 +212,7 @@ body {
 }
 
 .section ul {
-  font: Arial, Helvetica, 'Nimbus Sans L', sans-serif;
+  font: Arial, Helvetica, "Nimbus Sans L", sans-serif;
   font-size: 0.85rem;
   margin-top: 8px;
 }
@@ -263,7 +262,7 @@ a:hover {
 
 pre,
 code {
-  font-family: 'Consolas', 'Monaco', 'Courier New', Courier, monospace;
+  font-family: "Consolas", "Monaco", "Courier New", Courier, monospace;
 }
 
 pre {
@@ -274,7 +273,7 @@ pre {
   max-height: 600px;
   overflow: auto;
   width: auto;
-  font-size: 1.0rem;
+  font-size: 1rem;
 }
 pre code {
   line-height: 1.4rem;
@@ -290,7 +289,7 @@ pre code {
   font-size: 1.05rem;
   line-height: 1.6rem;
   margin: 3px;
-  font-family: 'Open Sans', Verdana, Sans-Serif;
+  font-family: "Open Sans", Verdana, Sans-Serif;
   color: #444;
 }
 
@@ -555,7 +554,7 @@ blockquote {
   margin: 0px;
   padding: 10px;
   background-color: #eee;
-  quotes: '\201C' '\201D';
+  quotes: "\201C""\201D";
   display: inline-block;
 }
 
@@ -713,7 +712,7 @@ button.thoughtbot {
     0 1px 3px #333333;
   box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333333;
   color: #fff;
-  font: bold 1.5em 'helvetica neue', helvetica, arial, sans-serif;
+  font: bold 1.5em "helvetica neue", helvetica, arial, sans-serif;
   padding: 12px 50px 14px 50px;
   text-align: center;
   text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8);
@@ -832,7 +831,7 @@ button.thoughtbot:active {
 
 a.loading-onebox {
   background: {
-    image: image-url('spinner_96.gif');
+    image: image-url("spinner_96.gif");
     position: 0;
     size: 20px;
     height: 25px;
@@ -910,7 +909,7 @@ a.loading-onebox {
 
 @mixin onebox-favicon($class, $image) {
   &.#{$class} .source {
-    background-image: image-url('favicons/#{$image}.png');
+    background-image: image-url("favicons/#{$image}.png");
     background-repeat: no-repeat;
     padding-left: 20px;
   }
@@ -1253,4 +1252,9 @@ a {
 .xml .css,
 .xml .hljs-cdata {
   opacity: 0.5;
+}
+
+textarea#secret {
+  width: 100%;
+  height: 500px;
 }

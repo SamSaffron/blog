@@ -3,11 +3,6 @@
 # version: 0.1
 # authors: Sam Saffron
 
-# gem "multi_xml","0.5.5"
-# gem "httparty", "0.12.0"
-# TODO consider serel
-# gem "serel", "1.2.0"
-
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
 ::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
 
@@ -20,8 +15,12 @@ end
 
 Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
 
-after_initialize do
+if Rails.env.development?
+  require 'middleware/enforce_hostname'
+  Rails.configuration.middleware.insert_after Rack::MethodOverride, Middleware::EnforceHostname
+end
 
+after_initialize do
   # got to patch this class to allow more hostnames
   class ::Middleware::EnforceHostname
     def call(env)
@@ -34,7 +33,6 @@ after_initialize do
       else
         env[Rack::HTTP_HOST] = ::BLOG_DISCOURSE
       end
-
       @app.call(env)
     end
   end
