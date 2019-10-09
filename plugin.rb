@@ -38,7 +38,6 @@ after_initialize do
   end
 
   load File.expand_path("../app/jobs/blog_update_twitter.rb", __FILE__)
-  load File.expand_path("../app/jobs/blog_update_stackoverflow.rb", __FILE__)
 
   require_dependency "plugin/filter"
 
