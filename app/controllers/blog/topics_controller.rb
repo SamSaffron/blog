@@ -22,6 +22,11 @@ module Blog
     def show
     end
 
+    def sitemap
+      @topics = visible_topics.by_newest
+      render content_type: 'text/xml; charset=utf-8'
+    end
+
     def permalink
       @topic = visible_topics.where("id = (select topic_id from topic_custom_fields
                                       where name = 'permalink' and value = ?)", request.path).first

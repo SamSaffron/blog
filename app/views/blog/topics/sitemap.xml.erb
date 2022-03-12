@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://samsaffron.com</loc>
+    <lastmod><%= @topics[0].updated_at.strftime("%Y-%m-%d") %></lastmod>
+  </url>
+  <% @topics.each do |topic| %>
+    <url>
+      <loc>https://samsaffron.com<%= permalink(topic) %></loc>
+      <lastmod><%= topic.updated_at.strftime("%Y-%m-%d") %></lastmod>
+    </url>
+  <% end %>
+</urlset>
