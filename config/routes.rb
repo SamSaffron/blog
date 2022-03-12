@@ -7,5 +7,6 @@ Blog::Engine.routes.draw do
   get "/" => "topics#index"
   get "posts" => "topics#index"
   get "about" => "blog#about"
+  get "robots.txt" => "robots#index"
   get "*path" => "topics#permalink"
 end

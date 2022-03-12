@@ -1,10 +1,12 @@
+# frozen_string_literal: true
+
 module Blog
   class TopicsController < Blog::ApplicationController
     def index
       respond_to do |format|
         format.html {
           @topics = visible_topics.by_newest
-          render :layout => "2col"
+          render layout: "2col"
         }
         format.rss {
           @topics = topics_for_feed
@@ -25,13 +27,13 @@ module Blog
                                       where name = 'permalink' and value = ?)", request.path).first
       if @topic
         @posts = Post.where(topic_id: @topic.id)
-                     .where(hidden: false)
-                     .by_post_number
-                     .includes(:user => :user_profile)
-                     .to_a
-        render :action => "show"
+         .where(hidden: false)
+         .by_post_number
+         .includes(user: :user_profile)
+         .to_a
+        render action: "show"
       else
-        render :text => "<p>404 - Blog post not found.</p>", :status => 404
+        render body: "404 - Blog post not found.".html_safe, status: 404
       end
     end
 
