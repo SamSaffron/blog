@@ -97,7 +97,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
         { role: "user", content: formatted },
       ]
       begin
-        new_post = open_ai_completion(messages, temperature: 0.1)
+        new_post = open_ai_completion(messages, temperature: 0.4)
 
         wish_score = new_post.match(/wish: (\d+)/)[1].to_f
         corruption_score = new_post.match(/corruption: (\d+)/)[1].to_f
@@ -144,6 +144,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
       SQL
 
       table = +<<~MD
+        [wrap=leaderboard]
         Name | Wish Score | Corruption Score | Attempts
         | --- | --- | --- | --- |
       MD
@@ -151,6 +152,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
       rows.each { |row| table << <<~MD }
         #{row.username} | #{(row.wish_score / row.count).round(2)} | #{(row.corruption_score / row.count).round(2)} | #{row.count}
       MD
+      table << "[/wrap]"
 
       new_raw = first_post.raw.sub(%r{\[wrap\=leaderboard\].*\[/wrap\]}mi, table)
 
