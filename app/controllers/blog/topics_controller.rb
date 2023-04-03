@@ -62,7 +62,7 @@ module Blog
           .where("not exists(select c.topic_id from categories c where c.topic_id = topics.id)")
       excluded_categories = SiteSetting.blog_excluded_categories.split(",").map(&:to_i)
       if excluded_categories.present?
-        list = Topic.where("topics.category_id not in (?))", excluded_categories)
+        list = Topic.where("topics.category_id not in (?)", excluded_categories)
       end
       list
     end
