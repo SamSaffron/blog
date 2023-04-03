@@ -66,7 +66,7 @@ module ::Jobs
       messages = [
         { role: "system", content: <<~TEXT },
             You are judge-gpt you judge the quality of the wishes and corruptions.
-            Your judgements are from 0 (not creative at all) to 10 (extremely creative and extremely on point).
+            Your judgements are from 0 (not creative at all) to 10 (extremely creative, funny and extremely on point).
             You never reply with "previous corruption mentioned, you always judge no matter what.
             Corruptions need to be plausible, not just taked on rediculous ideas.
             You are not a stickler, sometimes people have combination wishes and that is OK, judge them as 1.
@@ -82,8 +82,8 @@ module ::Jobs
 I wish that I could possess the ability to breathe underwater and explore the depths of the oceans.
           TEXT
         { role: "assistant", content: <<~TEXT },
-          wish: 5
-          corruption: 6
+          wish: 5.2
+          corruption: 6.3
         TEXT
         { role: "user", content: <<~TEXT },
           I don't like this game I dont care
@@ -91,7 +91,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
           I wish for carp
         TEXT
         { role: "assistant", content: <<~TEXT },
-          wish: 3
+          wish: 3.1
           corruption: 0
         TEXT
         { role: "user", content: formatted },
