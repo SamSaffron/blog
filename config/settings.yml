@@ -1,0 +1,14 @@
+plugins:
+  blog_open_ai_api_key: ""
+  blog_open_ai_model:
+    default: "gpt-3.5-turbo"
+    type: enum
+    choices:
+      - "gpt-3.5-turbo"
+      - "gpt-4"
+  blog_corrupt_a_wish_topic_id: ""
+  blog_excluded_categories:
+    type: list
+    list_type: category
+    default: ""
+

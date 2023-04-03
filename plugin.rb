@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 # name: blog
 # about: blog frontend for Discourse
-# version: 0.1
+# version: 0.2
 # authors: Sam Saffron
 
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
@@ -13,14 +15,16 @@ module ::Blog
   end
 end
 
-Rails.configuration.assets.precompile += ['LAB.js', 'blog.css']
+Rails.configuration.assets.precompile += %w[LAB.js blog.css]
 
 if Rails.env.development?
-  require 'middleware/enforce_hostname'
+  require "middleware/enforce_hostname"
   Rails.configuration.middleware.insert_after Rack::MethodOverride, Middleware::EnforceHostname
 end
 
 after_initialize do
+  SeedFu.fixture_paths << File.expand_path("../db/fixtures", __FILE__)
+
   # got to patch this class to allow more hostnames
   class ::Middleware::EnforceHostname
     def call(env)
@@ -38,12 +42,16 @@ after_initialize do
   end
 
   load File.expand_path("../app/jobs/blog_update_twitter.rb", __FILE__)
+  load File.expand_path("../app/jobs/corrupt_a_wish.rb", __FILE__)
+  load File.expand_path("../lib/corrupt_a_wish.rb", __FILE__)
 
   require_dependency "plugin/filter"
 
+  ::Blog.initialize_corrupt_a_wish(self)
+
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
     if post.post_number == 1 && post.topic && post.topic.archetype == "regular"
-      split = cooked.split(/<hr\/?>/)
+      split = cooked.split(%r{<hr/?>})
 
       if split.length > 1
         post.topic.custom_fields["summary"] = split[0]
@@ -66,7 +74,7 @@ after_initialize do
 
     def ensure_permalink
       unless custom_fields["permalink"]
-        custom_fields["permalink"] =  (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
+        custom_fields["permalink"] = (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
       end
     end
 

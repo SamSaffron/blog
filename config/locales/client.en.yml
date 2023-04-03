@@ -1,0 +1,4 @@
+en:
+  js:
+    action_codes:
+      judge_gpt: "Judged %{who} %{when}"
