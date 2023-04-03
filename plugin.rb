@@ -41,9 +41,9 @@ after_initialize do
     end
   end
 
-  load File.expand_path("../app/jobs/blog_update_twitter.rb", __FILE__)
-  load File.expand_path("../app/jobs/corrupt_a_wish.rb", __FILE__)
-  load File.expand_path("../lib/corrupt_a_wish.rb", __FILE__)
+  load File.expand_path("../app/jobs/scheduled/blog_update_twitter.rb", __FILE__)
+  load File.expand_path("../app/jobs/regular/corrupt_a_wish.rb", __FILE__)
+  load File.expand_path("../lib/corrupt_a_wish_lib.rb", __FILE__)
 
   require_dependency "plugin/filter"
 
