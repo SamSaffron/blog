@@ -99,8 +99,8 @@ I wish that I could possess the ability to breathe underwater and explore the de
       begin
         new_post = open_ai_completion(messages, temperature: 0.4)
 
-        wish_score = new_post.match(/wish: (\d+)/)[1].to_f
-        corruption_score = new_post.match(/corruption: (\d+)/)[1].to_f
+        wish_score = new_post.match(/wish: ([0-9.]+)/)[1].to_f
+        corruption_score = new_post.match(/corruption: ([0-9.]+)/)[1].to_f
 
         # we start with a wish only
         if post.post_number > 2
