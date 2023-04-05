@@ -131,7 +131,9 @@ I wish that I could possess the ability to breathe underwater and explore the de
       rows = DB.query(<<~SQL, topic_id: topic.id)
         select
           sum(wish_score) as wish_score,
+          max(wish_score) as best_wish_score,
           sum(corruption_score) as corruption_score,
+          max(corruption_score) as best_corruption_score,
           count(*) as count,
           u.id,
           u.username
@@ -145,12 +147,12 @@ I wish that I could possess the ability to breathe underwater and explore the de
 
       table = +<<~MD
         [wrap=leaderboard]
-        Name | Wish Score | Corruption Score | Attempts
-        | --- | --- | --- | --- |
+        Name | Wish Score| Best | Corruption Score | Best | Attempts
+        | --- | --- | --- | --- | --- | --- |
       MD
 
       rows.each { |row| table << <<~MD }
-        #{row.username} | #{(row.wish_score / row.count).round(2)} | #{(row.corruption_score / row.count).round(2)} | #{row.count}
+        #{row.username} | #{(row.wish_score / row.count).round(2)} | #{row.best_wish_score} | #{(row.corruption_score / row.count).round(2)}| #{row.best_corruption_score} | #{row.count}
       MD
       table << "[/wrap]"
 
