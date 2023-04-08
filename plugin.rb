@@ -13,6 +13,37 @@ module ::Blog
     engine_name "blog"
     isolate_namespace Blog
   end
+
+  def self.judge_gpt
+    @judge_gpt ||= User.find(-100)
+  end
+
+  def self.gpt_bot
+    @gpt_bot ||= User.find(-101)
+  end
+
+  def self.open_ai_completion(messages, temperature: 1.0)
+    return if SiteSetting.blog_open_ai_api_key.blank?
+
+    url = URI("https://api.openai.com/v1/chat/completions")
+    headers = {
+      "Content-Type": "application/json",
+      Authorization: "Bearer #{SiteSetting.blog_open_ai_api_key}",
+    }
+    payload = {
+      model: SiteSetting.blog_open_ai_model,
+      messages: messages,
+      max_tokens: 700,
+      temperature: temperature,
+    }
+
+    http = Net::HTTP.new(url.host, url.port)
+    http.use_ssl = true
+    request = Net::HTTP::Post.new(url, headers)
+    request.body = payload.to_json
+    response = http.request(request)
+    JSON.parse(response.body)["choices"][0]["message"]["content"].strip
+  end
 end
 
 Rails.configuration.assets.precompile += %w[LAB.js blog.css]
@@ -43,11 +74,11 @@ after_initialize do
 
   load File.expand_path("../app/jobs/scheduled/blog_update_twitter.rb", __FILE__)
   load File.expand_path("../app/jobs/regular/corrupt_a_wish.rb", __FILE__)
-  load File.expand_path("../lib/corrupt_a_wish_lib.rb", __FILE__)
+  load File.expand_path("../lib/gpt_dispatcher.rb", __FILE__)
 
   require_dependency "plugin/filter"
 
-  ::Blog.initialize_corrupt_a_wish(self)
+  ::Blog.initialize_gpt_dispatcher(self)
 
   Plugin::Filter.register(:after_post_cook) do |post, cooked|
     if post.post_number == 1 && post.topic && post.topic.archetype == "regular"

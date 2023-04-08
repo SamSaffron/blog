@@ -4,47 +4,16 @@ module ::Jobs
   class CorruptAWish < ::Jobs::Base
     sidekiq_options retry: false
 
-    def judge_gpt
-      @judge_gpt ||= User.find(-100)
-    end
-
-    def gpt_bot
-      @gpt_bot ||= User.find(-101)
-    end
-
     def execute(args)
       begin
         post = Post.find_by(id: args["post_id"])
         return if post.post_type != Post.types[:regular]
         judge(post)
-        return if post.user_id == gpt_bot.id
+        return if post.user_id == ::Blog.gpt_bot.id
         corrupt(post) if post
       rescue => e
         Discourse.warn_exception(e, message: "Failed to run corrupt a wish")
       end
-    end
-
-    def open_ai_completion(messages, temperature: 1.0)
-      return if SiteSetting.blog_open_ai_api_key.blank?
-
-      url = URI("https://api.openai.com/v1/chat/completions")
-      headers = {
-        "Content-Type": "application/json",
-        Authorization: "Bearer #{SiteSetting.blog_open_ai_api_key}",
-      }
-      payload = {
-        model: SiteSetting.blog_open_ai_model,
-        messages: messages,
-        max_tokens: 700,
-        temperature: temperature,
-      }
-
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true
-      request = Net::HTTP::Post.new(url, headers)
-      request.body = payload.to_json
-      response = http.request(request)
-      JSON.parse(response.body)["choices"][0]["message"]["content"].strip
     end
 
     def judge(post)
@@ -97,7 +66,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
         { role: "user", content: formatted },
       ]
       begin
-        new_post = open_ai_completion(messages, temperature: 0.4)
+        new_post = ::Blog.open_ai_completion(messages, temperature: 0.4)
 
         wish_score = new_post.match(/wish: ([0-9.]+)/)[1].to_f
         corruption_score = new_post.match(/corruption: ([0-9.]+)/)[1].to_f
@@ -112,7 +81,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
         end
 
         post.topic.add_moderator_post(
-          judge_gpt,
+          ::Blog.judge_gpt,
           new_post,
           post_type: Post.types[:small_action],
           action_code: "judge_gpt",
@@ -158,7 +127,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
 
       new_raw = first_post.raw.sub(%r{\[wrap\=leaderboard\].*\[/wrap\]}mi, table)
 
-      first_post.revise(judge_gpt, { raw: new_raw }, skip_validations: true)
+      first_post.revise(::Blog.judge_gpt, { raw: new_raw }, skip_validations: true)
     end
 
     def corrupt(post)
@@ -197,8 +166,8 @@ I wish that I could possess the ability to breathe underwater and explore the de
       ]
 
       begin
-        new_post = open_ai_completion(messages, temperature: 1.0)
-        PostCreator.create!(gpt_bot, topic_id: post.topic_id, raw: new_post)
+        new_post = ::Blog.open_ai_completion(messages, temperature: 1.0)
+        PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: new_post)
       rescue => e
         Discourse.warn_exception(e, message: "Failed to complete OpenAI request")
       end

@@ -11,4 +11,7 @@ plugins:
     type: list
     list_type: category
     default: ""
-
+  blog_allowed_gpt_pms_groups:
+    type: list
+    list_type: group
+    default: ""
