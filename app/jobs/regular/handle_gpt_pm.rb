@@ -44,8 +44,31 @@ module ::Jobs
       end
 
       messages += reverse_messages.reverse
-      new_post = ::Blog.open_ai_completion(messages, temperature: 0.4)
-      PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: new_post)
+
+      start = Time.now
+      new_post = nil
+
+      data = +""
+      ::Blog.open_ai_completion(messages, temperature: 0.4) do |partial|
+        data << partial
+        next if Time.now - start < 0.5
+
+        start = Time.now
+
+        if !new_post
+          new_post =
+            PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: data, validate: false)
+        else
+          new_post.revise(
+            ::Blog.gpt_bot,
+            { raw: data },
+            skip_validations: true,
+            skip_revisions: true,
+          )
+        end
+      end
+
+      new_post.revise(::Blog.gpt_bot, { raw: data }, skip_validations: true, skip_revisions: true)
     end
   end
 end

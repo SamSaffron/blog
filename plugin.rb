@@ -35,14 +35,39 @@ module ::Blog
       messages: messages,
       max_tokens: 700,
       temperature: temperature,
+      stream: block_given?,
     }
 
     http = Net::HTTP.new(url.host, url.port)
     http.use_ssl = true
     request = Net::HTTP::Post.new(url, headers)
     request.body = payload.to_json
-    response = http.request(request)
-    JSON.parse(response.body)["choices"][0]["message"]["content"].strip
+    output = +""
+    http.request(request) do |response|
+      return JSON.parse(response.read_body)["choices"][0]["message"]["content"] if !block_given?
+
+      response.read_body do |chunk|
+        chunk
+          .split("\n")
+          .each do |line|
+            data = line.split("data: ", 2)[1]
+            next if data == "[DONE]"
+
+            if data
+              json = JSON.parse(data)
+              partial = json["choices"][0].dig("delta", "content")
+              if partial
+                output << partial
+                yield partial
+              end
+            end
+          end
+      end
+    end
+    output
+  rescue => e
+    p e
+    raise e
   end
 end
 
