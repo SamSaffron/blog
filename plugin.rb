@@ -18,8 +18,12 @@ module ::Blog
     @judge_gpt ||= User.find(-100)
   end
 
+  def self.corrupt_a_bot
+    @corrupt_a_bot ||= User.find(-101)
+  end
+
   def self.gpt_bot
-    @gpt_bot ||= User.find(-101)
+    @gpt_bot ||= User.find(-102)
   end
 
   def self.open_ai_completion(messages, temperature: 1.0)

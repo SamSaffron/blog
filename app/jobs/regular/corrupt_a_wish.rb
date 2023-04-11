@@ -9,7 +9,7 @@ module ::Jobs
         post = Post.find_by(id: args["post_id"])
         return if post.post_type != Post.types[:regular]
         judge(post)
-        return if post.user_id == ::Blog.gpt_bot.id
+        return if post.user_id == ::Blog.corrupt_a_bot.id
         corrupt(post) if post
       rescue => e
         Discourse.warn_exception(e, message: "Failed to run corrupt a wish")
@@ -167,7 +167,7 @@ I wish that I could possess the ability to breathe underwater and explore the de
 
       begin
         new_post = ::Blog.open_ai_completion(messages, temperature: 1.0)
-        PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: new_post)
+        PostCreator.create!(::Blog.corrupt_a_bot, topic_id: post.topic_id, raw: new_post)
       rescue => e
         Discourse.warn_exception(e, message: "Failed to complete OpenAI request")
       end

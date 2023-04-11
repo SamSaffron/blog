@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-[[-100, "Judge GPT"], [-101, "GPT bot"]].each do |id, chatbot_name|
+[[-100, "Judge GPT"], [-101, "Corrupt a Bot"], [-102, "GPT Bot"]].each do |id, chatbot_name|
   user = User.find_by(id: id)
   if !user
     suggested_username = UserNameSuggester.suggest(chatbot_name)
