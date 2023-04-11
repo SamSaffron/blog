@@ -30,7 +30,7 @@ export default {
           if (
             this.model.isPrivateMessage &&
             this.model.details.allowed_users &&
-            this.model.details.allowed_users.filter((u) => u.id === -101)
+            this.model.details.allowed_users.filter((u) => u.id === -102)
               .length === 1
           ) {
             this.messageBus.subscribe(
