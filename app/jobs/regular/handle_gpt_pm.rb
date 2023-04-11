@@ -50,6 +50,7 @@ module ::Jobs
 
       data = +""
       ::Blog.open_ai_completion(messages, temperature: 0.4) do |partial|
+        #nonsense do |partial|
         data << partial
         next if Time.now - start < 0.5
 
@@ -59,16 +60,27 @@ module ::Jobs
           new_post =
             PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: data, validate: false)
         else
-          new_post.revise(
-            ::Blog.gpt_bot,
-            { raw: data },
-            skip_validations: true,
-            skip_revisions: true,
+          post.update!(raw: data, cooked: PrettyText.cook(data))
+
+          MessageBus.publish(
+            "/fast-edit/#{post.topic_id}",
+            { raw: data, post_id: new_post.id, post_number: new_post.post_number },
+            user_ids: post.topic.allowed_user_ids,
           )
         end
       end
 
-      new_post.revise(::Blog.gpt_bot, { raw: data }, skip_validations: true, skip_revisions: true)
+      new_post.revise(::Blog.gpt_bot, { raw: data }, skip_validations: true, skip_revision: true)
+    end
+
+    # for testing
+    def nonsense
+      i = 1
+      while i < 50
+        i += 1
+        sleep 0.1
+        yield "hello #{i}"
+      end
     end
   end
 end
