@@ -2,7 +2,7 @@
 
 module ::Jobs
   class HandleGptPm < ::Jobs::Base
-    MAX_PROMPT_LENGTH = 2048
+    MAX_PROMPT_LENGTH = 3000
 
     def execute(args)
       post = Post.find_by(id: args["post_id"])
@@ -14,9 +14,8 @@ module ::Jobs
     def gpt_answer(post)
       messages = [{ role: "system", content: <<~TEXT }]
           You are gpt-bot you answer questions and generate text.
-          You understand Markdown and live in a Discourse PM.
-          I provide you with context of previous discussions.
-          You do not prefix your answers with GPT_bot, .
+          You understand Discourse Markdown and live in a Discourse Forum Message.
+          You are provided you with context of previous discussions.
           TEXT
 
       prev_raws =
@@ -36,10 +35,6 @@ module ::Jobs
         break if length > MAX_PROMPT_LENGTH
         role = username == ::Blog.gpt_bot ? "system" : "user"
 
-        raw = <<~TEXT if role != "system"
-            #{username}: #{raw}
-          TEXT
-
         reverse_messages << { role: role, content: raw }
       end
 
@@ -49,7 +44,12 @@ module ::Jobs
       new_post = nil
 
       data = +""
-      ::Blog.open_ai_completion(messages, temperature: 0.4) do |partial|
+      ::Blog.open_ai_completion(
+        messages,
+        temperature: 0.4,
+        top_p: 0.9,
+        max_tokens: 1000,
+      ) do |partial|
         #nonsense do |partial|
         data << partial
         next if Time.now - start < 0.5

@@ -26,7 +26,7 @@ module ::Blog
     @gpt_bot ||= User.find(-102)
   end
 
-  def self.open_ai_completion(messages, temperature: 1.0)
+  def self.open_ai_completion(messages, temperature: 1.0, top_p: 1.0, max_tokens: 700)
     return if SiteSetting.blog_open_ai_api_key.blank?
 
     url = URI("https://api.openai.com/v1/chat/completions")
@@ -37,7 +37,8 @@ module ::Blog
     payload = {
       model: SiteSetting.blog_open_ai_model,
       messages: messages,
-      max_tokens: 700,
+      max_tokens: max_tokens,
+      top_p: top_p,
       temperature: temperature,
       stream: block_given?,
     }
