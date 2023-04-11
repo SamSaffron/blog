@@ -11,3 +11,5 @@ Blog::Engine.routes.draw do
   get "robots.txt" => "robots#index"
   get "*path" => "topics#permalink"
 end
+
+::BlogAdditions::Engine.routes.draw { post "gpt/cancel/:post_id" => "gpt#cancel_generation" }

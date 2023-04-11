@@ -8,6 +8,15 @@
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
 ::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
 
+register_asset "stylesheets/discuss.scss"
+
+module ::BlogAdditions
+  class Engine < ::Rails::Engine
+    engine_name "blog_additions"
+    isolate_namespace BlogAdditions
+  end
+end
+
 module ::Blog
   class Engine < ::Rails::Engine
     engine_name "blog"
@@ -48,10 +57,18 @@ module ::Blog
     request = Net::HTTP::Post.new(url, headers)
     request.body = payload.to_json
     output = +""
+
+    cancelled = false
+    cancel = lambda { cancelled = true }
+
     http.request(request) do |response|
       return JSON.parse(response.read_body)["choices"][0]["message"]["content"] if !block_given?
 
       response.read_body do |chunk|
+        if cancelled
+          http.finish
+          break
+        end
         chunk
           .split("\n")
           .each do |line|
@@ -63,16 +80,16 @@ module ::Blog
               partial = json["choices"][0].dig("delta", "content")
               if partial
                 output << partial
-                yield partial
+                yield partial, cancel
               end
             end
           end
       end
     end
     output
-  rescue => e
-    p e
-    raise e
+  rescue IOError
+    return output if cancelled
+    raise
   end
 end
 
@@ -149,4 +166,6 @@ after_initialize do
   Discourse::Application.routes.prepend do
     mount ::Blog::Engine, at: "/", constraints: BlogConstraint.new
   end
+
+  Discourse::Application.routes.append { mount ::BlogAdditions::Engine, at: "/blog" }
 end

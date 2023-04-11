@@ -1,0 +1,7 @@
+nav.post-controls .actions button.stop-generating {
+  display: none;
+}
+
+article.generating nav.post-controls .actions button.stop-generating {
+  display: inline-block;
+}

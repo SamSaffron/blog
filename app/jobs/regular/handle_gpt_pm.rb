@@ -49,16 +49,22 @@ module ::Jobs
         temperature: 0.4,
         top_p: 0.9,
         max_tokens: 1000,
-      ) do |partial|
-        #nonsense do |partial|
+      ) do |partial, cancel|
+        #nonsense do |partial, cancel|
         data << partial
+        if (new_post && !Discourse.redis.get("gpt_cancel:#{new_post.id}"))
+          cancel.call if cancel
+        end
         next if Time.now - start < 0.5
+
+        Discourse.redis.expire("gpt_cancel:#{new_post.id}", 60) if new_post
 
         start = Time.now
 
         if !new_post
           new_post =
             PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: data, validate: false)
+          Discourse.redis.setex("gpt_cancel:#{new_post.id}", 60, 1)
         else
           new_post.update!(raw: data, cooked: PrettyText.cook(data))
 
@@ -70,16 +76,29 @@ module ::Jobs
         end
       end
 
+      MessageBus.publish(
+        "/fast-edit/#{post.topic_id}",
+        { done: true, post_id: new_post.id, post_number: new_post.post_number },
+        user_ids: post.topic.allowed_user_ids,
+      )
+
       new_post.revise(::Blog.gpt_bot, { raw: data }, skip_validations: true, skip_revision: true)
     end
 
     # for testing
     def nonsense
+      cancelled = false
+      cancel = lambda { cancelled = true }
+
       i = 1
-      while i < 50
+      while i < 100
+        break if cancelled
+
         i += 1
-        sleep 0.1
-        yield "hello #{i}"
+        sleep 0.2
+
+        break if cancelled
+        yield "hello #{i}", cancel
       end
     end
   end

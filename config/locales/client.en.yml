@@ -1,4 +1,6 @@
 en:
   js:
+    blog:
+      stop_generating: "Stop generating"
     action_codes:
       judge_gpt: "Judged %{who} %{when}"
