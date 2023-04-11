@@ -60,7 +60,7 @@ module ::Jobs
           new_post =
             PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: data, validate: false)
         else
-          post.update!(raw: data, cooked: PrettyText.cook(data))
+          new_post.update!(raw: data, cooked: PrettyText.cook(data))
 
           MessageBus.publish(
             "/fast-edit/#{post.topic_id}",
