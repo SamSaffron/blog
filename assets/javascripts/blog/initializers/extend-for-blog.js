@@ -2,6 +2,7 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 import { cookAsync } from "discourse/lib/text";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
+import loadScript from "discourse/lib/load-script";
 
 export default {
   name: "extend-for-blog",
@@ -42,9 +43,20 @@ export default {
 
               // trigger events forces HTTP calls, so I am sledghammering this
               // this.appEvents.trigger("post-stream:refresh", { id: data.post_id });
-              document.querySelector(
+              // document.querySelector(
+              //   `#post_${data.post_number} .cooked`
+              // ).innerHTML = cooked;
+
+              const cookedElement = document.createElement("div");
+              cookedElement.innerHTML = cooked;
+
+              let element = document.querySelector(
                 `#post_${data.post_number} .cooked`
-              ).innerHTML = cooked;
+              );
+
+              loadScript("/javascripts/diffhtml.min.js").then(() => {
+                window.diff.innerHTML(element, cookedElement.innerHTML);
+              });
             });
           }
           if (post && data.done) {

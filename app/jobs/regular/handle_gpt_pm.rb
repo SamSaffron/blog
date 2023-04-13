@@ -50,7 +50,7 @@ module ::Jobs
         top_p: 0.9,
         max_tokens: 1000,
       ) do |partial, cancel|
-        #nonsense do |partial, cancel|
+        # nonsense do |partial, cancel|
         data << partial
         if (new_post && !Discourse.redis.get("gpt_cancel:#{new_post.id}"))
           cancel.call if cancel
@@ -91,6 +91,7 @@ module ::Jobs
       cancel = lambda { cancelled = true }
 
       i = 1
+      yield "this is some text\n\n```ruby\n"
       while i < 100
         break if cancelled
 
@@ -98,7 +99,7 @@ module ::Jobs
         sleep 0.2
 
         break if cancelled
-        yield "hello #{i}", cancel
+        yield "def a#{i}; puts 1; end\n", cancel
       end
     end
   end
