@@ -2,5 +2,6 @@ en:
   js:
     blog:
       stop_generating: "Stop generating"
+      start_gpt_chat: "Start GPT chat"
     action_codes:
       judge_gpt: "Judged %{who} %{when}"

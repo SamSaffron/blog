@@ -7,8 +7,30 @@ module ::Jobs
     def execute(args)
       post = Post.find_by(id: args["post_id"])
       gpt_answer(post) if post
+      gpt_auto_title(post) if post
     rescue => e
       Discourse.warn_exception(e, message: "Failed to complete OpenAI request")
+    end
+
+    def gpt_auto_title(post)
+      if post.post_number > 2 && post.topic.title == "New GPT Chat"
+        DistributedMutex.synchronize("gpt-auto-title") do
+          post.topic.reload
+          return if post.topic.title != "New GPT Chat"
+          messages = [{ role: "system", content: <<~TEXT }]
+            Suggest a 5 word title for the following topic, do not quote the text I am using you as an API:
+
+            #{post.topic.posts[1..-1].map(&:raw).join("\n\n")[0..MAX_PROMPT_LENGTH]}
+          TEXT
+
+          title = ::Blog.open_ai_completion(messages, temperature: 0.7, top_p: 0.9, max_tokens: 40)
+
+          PostRevisor.new(post.topic.first_post, post.topic).revise!(
+            Discourse.system_user,
+            title: title,
+          )
+        end
+      end
     end
 
     def gpt_answer(post)

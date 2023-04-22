@@ -3,6 +3,7 @@ import { cookAsync } from "discourse/lib/text";
 import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import loadScript from "discourse/lib/load-script";
+import Composer from "discourse/models/composer";
 
 export default {
   name: "extend-for-blog",
@@ -11,6 +12,30 @@ export default {
     //const siteSettings = container.lookup("site-settings:main");
     //
     withPluginApi("0.13.0", (api) => {
+      const currentUser = api.getCurrentUser();
+      if (currentUser && currentUser.gpt_bot_username) {
+        api.decorateWidget("header-icons:before", (helper) => {
+          return helper.attach("header-dropdown", {
+            title: "blog.start_gpt_chat",
+            icon: "robot",
+            action: "startNewGptChat",
+            active: false,
+          });
+        });
+        api.attachWidgetAction("header", "startNewGptChat", function () {
+          const composer = api.container.lookup("controller:composer");
+
+          const opts = {
+            action: Composer.PRIVATE_MESSAGE,
+            archetypeId: "private_message",
+            draftKey: Composer.NEW_PRIVATE_MESSAGE_KEY,
+            title: "New GPT Chat",
+            recipients: currentUser.gpt_bot_username,
+          };
+          composer.cancelComposer().then(() => composer.open(opts));
+        });
+      }
+
       api.addPostMenuButton("cancel-gpt", (post) => {
         if (post.user.id === -102) {
           return {
