@@ -5,3 +5,4 @@ en:
       start_gpt_chat: "Start GPT chat"
     action_codes:
       judge_gpt: "Judged %{who} %{when}"
+      image_gen: "Dall-E image generator"
