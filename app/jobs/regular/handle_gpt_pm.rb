@@ -25,7 +25,7 @@ module ::Jobs
           post.topic.reload
           return if post.topic.title != "New GPT Chat"
           messages = [{ role: "system", content: <<~TEXT }]
-            Suggest a 5 word title for the following topic, do not quote the text I am using you as an API:
+            Suggest a 7 word title for the following topic, do not quote the text I am using you as an API:
 
             #{post.topic.posts[1..-1].map(&:raw).join("\n\n")[0..MAX_PROMPT_LENGTH]}
           TEXT
@@ -69,7 +69,10 @@ module ::Jobs
         Keep in mind that the user may not see the !commands, the extra delay is fine.
       TEXT
 
-      messages << { role: "user", content: "draw me a picture of Sauron" }
+      messages << {
+        role: "user",
+        content: "draw me a picture of Sauron and tell me 2 things about him",
+      }
       messages << {
         role: "assistant",
         content:
@@ -79,7 +82,7 @@ module ::Jobs
       messages << {
         role: "assistant",
         content:
-          "Sure, here is an image of Sauron:\n![image](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)",
+          "Here is an image of Sauron:\n![image](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)\n1. Sauron is a powerful, malevolent, shapeshifting entity.\n2. Sauron is a Dark Lord.",
       }
 
       prev_raws =
