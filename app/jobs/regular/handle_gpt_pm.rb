@@ -85,7 +85,12 @@ module ::Jobs
 
         if !new_post
           new_post =
-            PostCreator.create!(::Blog.gpt_bot, topic_id: post.topic_id, raw: data, validate: false)
+            PostCreator.create!(
+              ::Blog.gpt_bot,
+              topic_id: post.topic_id,
+              raw: data,
+              skip_validations: true,
+            )
           Discourse.redis.setex("gpt_cancel:#{new_post.id}", 60, 1)
         else
           new_post.update!(raw: data, cooked: PrettyText.cook(data))
