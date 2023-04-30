@@ -78,11 +78,14 @@ module ::Jobs
         content:
           "!image Sauron: powerful, malevolent, shapeshifting entity; Dark Lord; creator of One Ring; seeks dominion; manifests as fiery, armored, one-eyed figure.",
       }
-      messages << { role: "user", content: "![image](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)" }
+      messages << {
+        role: "user",
+        content: "![image|512x512, 50%](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)",
+      }
       messages << {
         role: "assistant",
         content:
-          "Here is an image of Sauron:\n![image](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)\n1. Sauron is a powerful, malevolent, shapeshifting entity.\n2. Sauron is a Dark Lord.",
+          "Here is an image of Sauron:\n![image|512x512, 50%](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)\n1. Sauron is a powerful, malevolent, shapeshifting entity.\n2. Sauron is a Dark Lord.",
       }
 
       prev_raws =
@@ -106,14 +109,14 @@ module ::Jobs
         role = username == ::Blog.gpt_bot ? "assistant" : "user"
 
         if value.present?
-          p "value is present"
+          debug "value is present"
           parsed =
             begin
               JSON.parse(value)
             rescue StandardError
               nil
             end
-          p parsed
+          debug parsed
 
           if parsed
             parsed.reverse.each do |instruction|
@@ -249,7 +252,7 @@ module ::Jobs
 
       new_post.custom_fields[GPT_INSTRUCTION_FIELD] = [
         { role: "assistant", content: "!image #{description}" },
-        { role: "user", content: "![image](#{upload.short_url})" },
+        { role: "user", content: "![image|512x512, 50%](#{upload.short_url})" },
       ].to_json
 
       new_post.save_custom_fields
