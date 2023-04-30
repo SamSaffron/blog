@@ -2,8 +2,11 @@
 
 module ::Jobs
   class HandleGptPm < ::Jobs::Base
-    def debug(str)
-      puts str if Rails.env.development?
+    def debug(obj)
+      if Rails.env.development?
+        obj = obj.inspect if !obj.is_a?(String)
+        puts obj
+      end
     end
 
     MAX_PROMPT_LENGTH = 5000
@@ -34,7 +37,7 @@ module ::Jobs
 
           PostRevisor.new(post.topic.first_post, post.topic).revise!(
             Discourse.system_user,
-            title: title,
+            title: title.sub(/\A"/, "").sub(/"\Z/, ""),
           )
         end
       end
@@ -135,7 +138,7 @@ module ::Jobs
       new_post = nil
       processing_command = false
 
-      p messages
+      debug messages
 
       data = +""
       ::Blog.open_ai_completion(
