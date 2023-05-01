@@ -107,8 +107,11 @@ module ::Jobs
 
       length = 0
       prev_raws.each do |raw, username, value, post_type|
+        break if length >= MAX_PROMPT_LENGTH
+
+        raw = raw.to_s[0..(MAX_PROMPT_LENGTH - length)]
         length += raw.length
-        break if length > MAX_PROMPT_LENGTH
+
         role = username == ::Blog.gpt_bot ? "assistant" : "user"
 
         if value.present?
@@ -123,7 +126,7 @@ module ::Jobs
 
           if parsed
             parsed.reverse.each do |instruction|
-              p instruction
+              debug instruction
               reverse_messages << { role: instruction["role"], content: instruction["content"] }
             end
           end
@@ -145,7 +148,7 @@ module ::Jobs
         messages,
         temperature: 0.4,
         top_p: 0.9,
-        max_tokens: 1000,
+        max_tokens: 6000,
       ) do |partial, cancel|
         # nonsense do |partial cancel|
         data << partial
