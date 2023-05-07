@@ -59,37 +59,26 @@ module ::Jobs
 
         !image DETAILED_IMAGE_DESCRIPTION
         !time RUBY_COMPATIBLE_TIMEZONE
-        !userinfo
-        !url_summary URL
+        !search SEARCH_QUERY
 
-        When issuing a command, always use the ! prefix. Never mix a user response with a command.
-        The !image command can work on people, places, things, and more, as long as you can describe it.
+        !image will generate an image using DALL-E
+        !time will generate the time in a timezone
+        !search will search the forum for a query
 
-        When generating !commands, ONLY EVER generate one command per post. Never add text after !commands.
+        Commands should be issued in single assistant message.
 
-        For multi-step tasks, follow the user’s preferred workflow by generating separate posts for each command.
+        Example sessions:
 
-        Keep in mind that the user may not see the !commands, the extra delay is fine.
+        User: draw a picture of THING
+        GPT: !image THING
+        User: THING GPT DOES NOT KNOW ABOUT
+        GPT: !search THING GPT DOES NOT KNOW ABOUT
       TEXT
 
-      messages << {
-        role: "user",
-        content: "draw me a picture of Sauron and tell me 2 things about him",
-      }
-      messages << {
-        role: "assistant",
-        content:
-          "!image Sauron: powerful, malevolent, shapeshifting entity; Dark Lord; creator of One Ring; seeks dominion; manifests as fiery, armored, one-eyed figure.",
-      }
-      messages << {
-        role: "user",
-        content: "![image|512x512, 50%](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)",
-      }
-      messages << {
-        role: "assistant",
-        content:
-          "Here is an image of Sauron:\n![image|512x512, 50%](upload://wmRWpThF5acVqYYALKtuwW7TTtn.png)\n1. Sauron is a powerful, malevolent, shapeshifting entity.\n2. Sauron is a Dark Lord.",
-      }
+      messages << { role: "user", content: "echo the text 'test'" }
+      messages << { role: "assistant", content: "!echo test" }
+      messages << { role: "user", content: "test" }
+      messages << { role: "assistant", content: "test was echoed" }
 
       prev_raws =
         post
@@ -127,7 +116,9 @@ module ::Jobs
           if parsed
             parsed.reverse.each do |instruction|
               debug instruction
-              reverse_messages << { role: instruction["role"], content: instruction["content"] }
+              content = instruction["content"][0..(MAX_PROMPT_LENGTH - length)]
+              length += content.length
+              reverse_messages << { role: instruction["role"], content: content }
             end
           end
         end
@@ -142,13 +133,14 @@ module ::Jobs
       processing_command = false
 
       debug messages
+      puts "messages length: #{messages.to_s.length}"
 
       data = +""
       ::Blog.open_ai_completion(
         messages,
         temperature: 0.4,
         top_p: 0.9,
-        max_tokens: 6000,
+        max_tokens: 3000,
       ) do |partial, cancel|
         # nonsense do |partial cancel|
         data << partial
@@ -186,6 +178,8 @@ module ::Jobs
         end
       end
 
+      debug "out of loop #{data}"
+
       if new_post
         MessageBus.publish(
           "/fast-edit/#{post.topic_id}",
@@ -209,6 +203,12 @@ module ::Jobs
         return
       end
 
+      if command.start_with?("search")
+        description = command.split(" ", 2).last
+        generate_search(post, description, commands_run: commands_run)
+        return
+      end
+
       if command.start_with?("time")
         timezone = command.split(" ").last
         time =
@@ -225,6 +225,46 @@ module ::Jobs
         post.save_custom_fields
         gpt_answer(post, commands_run: commands_run)
       end
+    end
+
+    def generate_search(post, description, commands_run:)
+      debug "PERFORMING SEARCH: #{description}"
+      api_key = SiteSetting.blog_serp_api_key
+      cx = SiteSetting.blog_serp_api_cx
+      query = CGI.escape(description)
+      uri =
+        URI("https://www.googleapis.com/customsearch/v1?key=#{api_key}&cx=#{cx}&q=#{query}&num=10")
+      body = Net::HTTP.get(uri)
+      debug body
+      results = parse_search_json(body)
+
+      debug results
+
+      post.custom_fields[GPT_INSTRUCTION_FIELD] = [
+        { role: "assistant", content: "!search #{description}" },
+        { role: "user", content: "RESULTS ARE: #{results}" },
+      ].to_json
+
+      post.save_custom_fields
+      gpt_answer(post, commands_run: commands_run)
+    end
+
+    def parse_search_json(json_data)
+      results = JSON.parse(json_data)["items"]
+      formatted_results = []
+
+      results.each do |result|
+        formatted_result = {
+          title: result["title"],
+          link: result["link"],
+          snippet: result["snippet"],
+          displayLink: result["displayLink"],
+          formattedUrl: result["formattedUrl"],
+        }
+        formatted_results << formatted_result
+      end
+
+      formatted_results
     end
 
     def generate_image(post, description, commands_run:)
@@ -256,13 +296,14 @@ module ::Jobs
       upload = upload_creator.create_for(::Blog.gpt_bot.id)
       debug "CREATED"
 
-      new_post.custom_fields[GPT_INSTRUCTION_FIELD] = [
-        { role: "assistant", content: "!image #{description}" },
-        { role: "user", content: "![image|512x512, 50%](#{upload.short_url})" },
-      ].to_json
+      new_post.revise(
+        ::Blog.gpt_bot,
+        { raw: "![#{description.gsub(/\|\'\"/, "")}|512x512, 50%](#{upload.short_url})" },
+        skip_validations: true,
+        skip_revision: true,
+      )
 
-      new_post.save_custom_fields
-      gpt_answer(new_post, commands_run: commands_run)
+      #gpt_answer(new_post, commands_run: commands_run)
     end
 
     # for testing

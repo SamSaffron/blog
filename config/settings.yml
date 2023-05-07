@@ -15,3 +15,5 @@ plugins:
     type: list
     list_type: group
     default: ""
+  blog_serp_api_key: ""
+  blog_serp_api_cx: ""

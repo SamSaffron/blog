@@ -85,6 +85,7 @@ module ::Blog
     cancel = lambda { cancelled = true }
 
     http.request(request) do |response|
+      p response
       return JSON.parse(response.read_body)["choices"][0]["message"]["content"] if !block_given?
 
       response.read_body do |chunk|

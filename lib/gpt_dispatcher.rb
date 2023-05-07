@@ -6,7 +6,8 @@ module ::Blog
         Jobs.enqueue(:corrupt_a_wish, post_id: post.id)
       end
 
-      if post.topic.private_message? && post.user_id != ::Blog.gpt_bot.id
+      if post.topic.private_message? && post.user_id != ::Blog.gpt_bot.id &&
+           post.post_type != Post.types[:small_action]
         if post.topic.topic_allowed_users.where(user_id: ::Blog.gpt_bot.id).exists?
           if post && SiteSetting.blog_allowed_gpt_pms_groups.present? &&
                post
