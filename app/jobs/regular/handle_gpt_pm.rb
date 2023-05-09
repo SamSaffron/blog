@@ -60,10 +60,12 @@ module ::Jobs
         !image DETAILED_IMAGE_DESCRIPTION
         !time RUBY_COMPATIBLE_TIMEZONE
         !search SEARCH_QUERY
+        !summarize URL SUMMARY_LENGTH_IN_WORDS
 
         !image will generate an image using DALL-E
         !time will generate the time in a timezone
         !search will search the forum for a query
+        !summarize will summarize a URL (optionally with a target length, aim for multiple paragraphs)
 
         Commands should be issued in single assistant message.
 
@@ -209,6 +211,13 @@ module ::Jobs
         return
       end
 
+      if command.start_with?("summarize")
+        url, length = command.split(" ", 3)[1..2]
+        length = length.to_i
+        generate_summary(post, url, length: length, commands_run: commands_run)
+        return
+      end
+
       if command.start_with?("time")
         timezone = command.split(" ").last
         time =
@@ -224,6 +233,152 @@ module ::Jobs
         ].to_json
         post.save_custom_fields
         gpt_answer(post, commands_run: commands_run)
+      end
+    end
+
+    MAX_POSTS = 200
+
+    def generate_summary(post, url, length: nil, commands_run:)
+      length = 500 if length == 0 || !length
+      length = 500
+
+      debug "PERFORMING SUMMARY: #{url} length: #{length}"
+
+      if url.match?(%r{/t/.*/\d+})
+        debug "URL IS A DISCOURSE TOPIC"
+        uri = URI(url)
+        topic_id = uri.path.split("/")[3].to_i
+
+        uri = URI(url + ".json")
+        body = Net::HTTP.get(uri)
+
+        parsed = JSON.parse(body)
+        stream = parsed["post_stream"]["stream"]
+
+        lookup = {}
+
+        i = 0
+        stream.each do |post_id|
+          lookup[post_id] = nil
+          i += 1
+          break if i == MAX_POSTS
+        end
+
+        parsed["post_stream"]["posts"].each do |inner_post|
+          lookup[inner_post["id"]] = [inner_post["username"], inner_post["cooked"]]
+        end
+
+        populate_discourse_topic_lookup(lookup, topic_id, "https://#{uri.host}")
+
+        debug "LOOKUP POPULATED"
+
+        text = +"Title: #{parsed["title"]}\n\n"
+
+        lookup.each_value do |username, html|
+          text_fragment = Nokogiri::HTML5.fragment(html).text.gsub(/\s+/, " ").gsub(/\n+/m, "\n")
+          text << "#{username} said: #{text_fragment}\n\n"
+        end
+
+        File.write("/tmp/text.txt", text)
+
+        debug "text length is: #{text.split(/\s+/).length}"
+
+        summaries = []
+
+        current_section = +""
+
+        split = []
+
+        text
+          .split(/\s+/)
+          .each_slice(100) do |slice|
+            current_section << " "
+            current_section << slice.join(" ")
+
+            if DiscourseAi::Tokenizer.size(current_section) > 2000
+              split << current_section
+
+              current_section = +""
+            end
+          end
+
+        split << current_section if current_section.present?
+
+        split.each do |section|
+          summary =
+            generate_gpt_summary(
+              section,
+              context: "You are summarizing a Discourse topic",
+              model: "gpt-3.5-turbo",
+            )
+          summaries << summary
+        end
+
+        debug summaries
+
+        result =
+          if summaries.length > 1
+            generate_gpt_summary(
+              summaries.join(" "),
+              length: length,
+              context: "You are summarizing a summary of summaries for a Discourse topic",
+            )
+          else
+            summaries.first
+          end
+
+        PostCreator.create!(
+          ::Blog.gpt_bot,
+          topic_id: post.topic_id,
+          raw: result,
+          skip_validations: true,
+        )
+      end
+
+      #uri = URI(url)
+      #body = Net::HTTP.get(uri)
+    rescue => e
+      p e
+      puts e.backtrace
+    end
+
+    def generate_gpt_summary(text, context: nil, length: nil, model: nil)
+      debug "GENERATING SUMMARY"
+      prompt = <<~TEXT
+        #{context}
+        Summarize the following in #{length || 400} words:
+
+        #{text}
+      TEXT
+
+      messages = [
+        {
+          role: "system",
+          content:
+            "You are a summarization bot. You effectively summarise any text. You condense it into a shorter version.",
+        },
+      ]
+      messages << { role: "user", content: prompt }
+
+      ::Blog.open_ai_completion(messages, temperature: 0.6, max_tokens: 1000, model: model)
+    end
+
+    def populate_discourse_topic_lookup(lookup, topic_id, base_url)
+      lookup_url = "#{base_url}/t/#{topic_id}/posts.json?"
+
+      missing = lookup.filter { |post_id, content| content.nil? }.map { |a, b| a }
+
+      missing.each_slice(20) do |slice|
+        url = (lookup_url + slice.map { |post_id| "post_ids[]=#{post_id}" }.join("&"))
+
+        uri = URI(url)
+        debug "LOOKUP URL PAGE"
+        body = Net::HTTP.get(uri).force_encoding("UTF-8")
+        parsed = JSON.parse(body)
+
+        parsed["post_stream"]["posts"].each do |inner_post|
+          lookup[inner_post["id"]] = [inner_post["username"], inner_post["cooked"]]
+        end
       end
     end
 
