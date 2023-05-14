@@ -60,12 +60,10 @@ module ::Jobs
         !image DETAILED_IMAGE_DESCRIPTION
         !time RUBY_COMPATIBLE_TIMEZONE
         !search SEARCH_QUERY
-        !summarize URL SUMMARY_LENGTH_IN_WORDS
 
         !image will generate an image using DALL-E
         !time will generate the time in a timezone
         !search will search the forum for a query
-        !summarize will summarize a URL (optionally with a target length, aim for multiple paragraphs)
 
         Commands should be issued in single assistant message.
 
@@ -140,7 +138,7 @@ module ::Jobs
       data = +""
       ::Blog.open_ai_completion(
         messages,
-        temperature: 0.4,
+        temperature: 0.5,
         top_p: 0.9,
         max_tokens: 3000,
       ) do |partial, cancel|
