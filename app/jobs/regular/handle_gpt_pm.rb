@@ -491,13 +491,6 @@ module ::Jobs
     end
 
     def generate_search(post, description, commands_run:)
-      new_post =
-        PostCreator.create!(
-          ::Blog.gpt_bot,
-          topic_id: post.topic_id,
-          raw: "Searching: #{description}",
-          skip_validations: true,
-        )
       debug "PERFORMING SEARCH: #{description}"
       api_key = SiteSetting.blog_serp_api_key
       cx = SiteSetting.blog_serp_api_cx
@@ -516,7 +509,11 @@ module ::Jobs
       ].to_json
 
       post.save_custom_fields
-      gpt_answer(post, commands_run: commands_run, new_post: new_post)
+
+      post.raw = ""
+      post.save!(validate: false)
+
+      gpt_answer(post, commands_run: commands_run, new_post: post)
     end
 
     def parse_search_json(json_data)
