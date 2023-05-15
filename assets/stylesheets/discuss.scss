@@ -5,3 +5,25 @@ nav.post-controls .actions button.stop-generating {
 article.generating nav.post-controls .actions button.stop-generating {
   display: inline-block;
 }
+
+body .gpt-persona {
+  display: none;
+}
+
+body.gpt-chat {
+  .gpt-persona {
+    display: block;
+    margin-bottom: 1em;
+    margin-top: -2em;
+  }
+
+  .composer-action-title {
+    display: none !important;
+  }
+  .composer-fields {
+    .user-selector,
+    .title-and-category {
+      display: none !important;
+    }
+  }
+}

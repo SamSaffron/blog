@@ -58,7 +58,7 @@ module ::Blog
     end
   end
 
-  def self.open_ai_completion(messages, temperature: 1.0, top_p: 1.0, max_tokens: 700)
+  def self.open_ai_completion(messages, temperature: 1.0, top_p: 1.0, max_tokens: 700, model: nil)
     return if SiteSetting.blog_open_ai_api_key.blank?
 
     url = URI("https://api.openai.com/v1/chat/completions")
@@ -67,7 +67,7 @@ module ::Blog
       Authorization: "Bearer #{SiteSetting.blog_open_ai_api_key}",
     }
     payload = {
-      model: SiteSetting.blog_open_ai_model,
+      model: model || SiteSetting.blog_open_ai_model,
       messages: messages,
       max_tokens: max_tokens,
       top_p: top_p,
@@ -85,8 +85,11 @@ module ::Blog
     cancel = lambda { cancelled = true }
 
     http.request(request) do |response|
-      p response
-      return JSON.parse(response.read_body)["choices"][0]["message"]["content"] if !block_given?
+      if !block_given?
+        body = response.read_body
+        p body
+        return JSON.parse(body)["choices"][0]["message"]["content"]
+      end
 
       response.read_body do |chunk|
         if cancelled

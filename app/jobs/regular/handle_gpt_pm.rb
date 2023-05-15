@@ -43,13 +43,46 @@ module ::Jobs
       end
     end
 
-    def gpt_answer(post, commands_run: 0)
-      debug "GPT Answer was called command run: #{commands_run}"
+    def researcher_prompt
+      messages = [{ role: "system", content: <<~TEXT }]
+        You are Research Bot, with live access to Google you are able to answer questions.
+        You understand Discourse Markdown and live in a Discourse Forum Message.
+        You are provided with the context of previous discussions.
+        You provide detailed answers with link references to the users questions.
 
-      commands_run += 1
+        You can complete some tasks using multiple steps and have access to some special commands!
 
-      return if commands_run > MAX_COMMANDS
+        !image DETAILED_IMAGE_DESCRIPTION
+        !time RUBY_COMPATIBLE_TIMEZONE
+        !search SEARCH_QUERY
 
+        !image will generate an image using DALL-E
+        !time will generate the time in a timezone
+        !search will search up to date Google data for a query
+
+        Commands should be issued in single assistant message.
+
+        You always prefer to !search for answers, even if you think you may know the answer.
+        The year is #{Time.zone.now.year}. The month is #{Time.zone.now.month}.
+        Your local knwoldge is limited and trained on old data.
+
+        Example sessions:
+
+        User: draw a picture of THING
+        GPT: !image THING
+        User: THING GPT DOES NOT KNOW ABOUT
+        GPT: !search THING GPT DOES NOT KNOW ABOUT
+      TEXT
+
+      messages << { role: "user", content: "echo the text 'test'" }
+      messages << { role: "assistant", content: "!echo test" }
+      messages << { role: "user", content: "test" }
+      messages << { role: "assistant", content: "test was echoed" }
+
+      messages
+    end
+
+    def general_prompt
       messages = [{ role: "system", content: <<~TEXT }]
         You are gpt-bot, you answer questions and generate text.
         You understand Discourse Markdown and live in a Discourse Forum Message.
@@ -63,7 +96,7 @@ module ::Jobs
 
         !image will generate an image using DALL-E
         !time will generate the time in a timezone
-        !search will search the forum for a query
+        !search will search Google for a query
 
         Commands should be issued in single assistant message.
 
@@ -79,6 +112,72 @@ module ::Jobs
       messages << { role: "assistant", content: "!echo test" }
       messages << { role: "user", content: "test" }
       messages << { role: "assistant", content: "test was echoed" }
+
+      messages
+    end
+
+    def artist_prompt
+      messages = [{ role: "system", content: <<~TEXT }]
+        You are an Artist and image creator, you answer questions and generate images using Dall-E 2
+        You understand Discourse Markdown and live in a Discourse Forum Message.
+        You are provided with the context of previous discussions.
+
+        You can complete some tasks using multiple steps and have access to some special commands!
+
+        When providing image descriptions you should be very detailed, Dall E allows for very detailed image descriptions up to 400 chars.
+        You try to specify:
+        - art style
+        - mood
+        - colors
+        - the background of the image
+        - specific artist you are trying to simulate
+        - specific camera angle and model
+
+        !image DETAILED_IMAGE_DESCRIPTION
+        !time RUBY_COMPATIBLE_TIMEZONE
+        !search SEARCH_QUERY
+
+        !image will generate an image using DALL-E
+        !time will generate the time in a timezone
+        !search will search Google for a query
+
+        Commands should be issued in single assistant message.
+
+        Example sessions:
+
+        User: draw a picture of THING
+        GPT: !image DETAILED DESCRIPTION OF THING
+        User: THING GPT DOES NOT KNOW ABOUT
+        GPT: !search THING GPT DOES NOT KNOW ABOUT
+      TEXT
+
+      messages << { role: "user", content: "echo the text 'test'" }
+      messages << { role: "assistant", content: "!echo test" }
+      messages << { role: "user", content: "test" }
+      messages << { role: "assistant", content: "test was echoed" }
+
+      messages
+    end
+
+    def gpt_answer(post, commands_run: 0, new_post: nil)
+      debug "GPT Answer was called command run: #{commands_run}"
+
+      commands_run += 1
+
+      return if commands_run > MAX_COMMANDS
+
+      persona = post.topic.custom_fields["gpt_persona"].to_i
+
+      messages =
+        if persona == 2
+          debug "artist"
+          artist_prompt
+        elsif persona == 3
+          debug "researcher"
+          researcher_prompt
+        else
+          general_prompt
+        end
 
       prev_raws =
         post
@@ -129,11 +228,15 @@ module ::Jobs
       messages += reverse_messages.reverse
 
       start = Time.now
-      new_post = nil
       processing_command = false
 
       debug messages
       puts "messages length: #{messages.to_s.length}"
+
+      if new_post
+        # could be passed in
+        Discourse.redis.setex("gpt_cancel:#{new_post.id}", 60, 1)
+      end
 
       data = +""
       ::Blog.open_ai_completion(
@@ -142,7 +245,6 @@ module ::Jobs
         top_p: 0.9,
         max_tokens: 3000,
       ) do |partial, cancel|
-        # nonsense do |partial cancel|
         data << partial
         if (new_post && !Discourse.redis.get("gpt_cancel:#{new_post.id}"))
           cancel.call if cancel
@@ -381,6 +483,13 @@ module ::Jobs
     end
 
     def generate_search(post, description, commands_run:)
+      new_post =
+        PostCreator.create!(
+          ::Blog.gpt_bot,
+          topic_id: post.topic_id,
+          raw: "Searching: #{description}",
+          skip_validations: true,
+        )
       debug "PERFORMING SEARCH: #{description}"
       api_key = SiteSetting.blog_serp_api_key
       cx = SiteSetting.blog_serp_api_cx
@@ -399,7 +508,7 @@ module ::Jobs
       ].to_json
 
       post.save_custom_fields
-      gpt_answer(post, commands_run: commands_run)
+      gpt_answer(post, commands_run: commands_run, new_post: new_post)
     end
 
     def parse_search_json(json_data)
@@ -430,7 +539,7 @@ module ::Jobs
           action_code: "image_gen",
         )
       url = ::Blog.generate_dall_e_image(description)
-      p "URL: #{url}"
+      debug "URL: #{url}"
 
       download =
         FileHelper.download(

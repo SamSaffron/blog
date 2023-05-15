@@ -4,13 +4,15 @@ import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import loadScript from "discourse/lib/load-script";
 import Composer from "discourse/models/composer";
+import ComposerEditor from "discourse/components/composer-editor";
+import { observes, on } from "discourse-common/utils/decorators";
 
 export default {
   name: "extend-for-blog",
 
-  initialize() {
-    //const siteSettings = container.lookup("site-settings:main");
-    //
+  initialize(container) {
+    const appEvents = container.lookup("service:app-events");
+
     withPluginApi("0.13.0", (api) => {
       const currentUser = api.getCurrentUser();
       if (currentUser && currentUser.gpt_bot_username) {
@@ -32,7 +34,25 @@ export default {
             title: "New GPT Chat",
             recipients: currentUser.gpt_bot_username,
           };
-          composer.cancelComposer().then(() => composer.open(opts));
+          composer.open(opts);
+        });
+
+        ComposerEditor.reopen({
+          @on("didInsertElement")
+          composerJustStarted: function () {
+            if (
+              this.composer.targetRecipients === currentUser.gpt_bot_username
+            ) {
+              document.body.classList.add("gpt-chat");
+            } else {
+              document.body.classList.remove("gpt-chat");
+            }
+          },
+
+          @observes("composer.action", "composer.composerState")
+          composerTargetChanged: function () {
+            this.composerJustStarted();
+          },
         });
       }
 
