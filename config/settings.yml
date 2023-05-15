@@ -17,3 +17,4 @@ plugins:
     default: ""
   blog_serp_api_key: ""
   blog_serp_api_cx: ""
+  blog_stability_api_key: ""

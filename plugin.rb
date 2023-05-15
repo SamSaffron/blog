@@ -158,6 +158,8 @@ after_initialize do
   load File.expand_path("../app/jobs/scheduled/blog_update_twitter.rb", __FILE__)
   load File.expand_path("../app/jobs/regular/corrupt_a_wish.rb", __FILE__)
   load File.expand_path("../lib/gpt_dispatcher.rb", __FILE__)
+  load File.expand_path("../lib/stability_image_generator.rb", __FILE__)
+  load File.expand_path("../lib/dalle_image_generator.rb", __FILE__)
 
   require_dependency "plugin/filter"
 

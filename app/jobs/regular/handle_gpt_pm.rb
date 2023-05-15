@@ -197,6 +197,8 @@ module ::Jobs
       prev_raws.each do |raw, username, value, post_type|
         break if length >= MAX_PROMPT_LENGTH
 
+        override = false
+
         raw = raw.to_s[0..(MAX_PROMPT_LENGTH - length)]
         length += raw.length
 
@@ -214,6 +216,10 @@ module ::Jobs
 
           if parsed
             parsed.reverse.each do |instruction|
+              if instruction == { "override" => true }
+                override = true
+                next
+              end
               debug instruction
               content = instruction["content"][0..(MAX_PROMPT_LENGTH - length)]
               length += content.length
@@ -222,7 +228,7 @@ module ::Jobs
           end
         end
 
-        reverse_messages << { role: role, content: raw } if post_type != Post.types[:small_action]
+        reverse_messages << { role: role, content: raw } if !override
       end
 
       messages += reverse_messages.reverse
@@ -259,16 +265,14 @@ module ::Jobs
         processing_command ||= data[0] == "!"
 
         if !new_post
-          if !processing_command
-            new_post =
-              PostCreator.create!(
-                ::Blog.gpt_bot,
-                topic_id: post.topic_id,
-                raw: data,
-                skip_validations: true,
-              )
-            Discourse.redis.setex("gpt_cancel:#{new_post.id}", 60, 1)
-          end
+          new_post =
+            PostCreator.create!(
+              ::Blog.gpt_bot,
+              topic_id: post.topic_id,
+              raw: data,
+              skip_validations: true,
+            )
+          Discourse.redis.setex("gpt_cancel:#{new_post.id}", 60, 1)
         else
           new_post.update!(raw: data, cooked: PrettyText.cook(data))
 
@@ -290,9 +294,13 @@ module ::Jobs
         )
 
         new_post.revise(::Blog.gpt_bot, { raw: data }, skip_validations: true, skip_revision: true)
-      end
 
-      process_command(post, data[1..-1].strip, commands_run: commands_run) if processing_command
+        commands = data.split("\n").select { |l| l[0] == "!" }
+
+        if commands.length > 0
+          process_command(new_post, commands[0][1..-1].strip, commands_run: commands_run)
+        end
+      end
     end
 
     def process_command(post, command, commands_run:)
@@ -531,41 +539,23 @@ module ::Jobs
 
     def generate_image(post, description, commands_run:)
       debug "GENERATING IMAGE: #{description}"
-      new_post =
-        post.topic.add_moderator_post(
-          ::Blog.gpt_bot,
-          "Generating image: #{description}",
-          post_type: Post.types[:small_action],
-          action_code: "image_gen",
-        )
-      url = ::Blog.generate_dall_e_image(description)
-      debug "URL: #{url}"
 
-      download =
-        FileHelper.download(
-          url,
-          max_file_size: 10.megabytes,
-          retain_on_max_file_size_exceeded: true,
-          tmp_file_name: "discourse-hotlinked",
-          follow_redirect: true,
-          read_timeout: 15,
-        )
+      #uploads = ::Blog::DalleImageGenerator.generate_image(description)
+      uploads = ::Blog::StabilityImageGenerator.generate_image(prompt: description)
 
-      debug "DOWNLOADED"
+      uploads.map! do |upload|
+        "![#{description.gsub(/\|\'\"/, "")}|512x512, 50%](#{upload.short_url})"
+      end
 
-      upload_creator = UploadCreator.new(download, "image.png")
-      debug "CREATOR DONE"
-      upload = upload_creator.create_for(::Blog.gpt_bot.id)
-      debug "CREATED"
+      raw = post.raw.sub(/^!image.*$/, uploads.join("\n\n"))
 
-      new_post.revise(
-        ::Blog.gpt_bot,
-        { raw: "![#{description.gsub(/\|\'\"/, "")}|512x512, 50%](#{upload.short_url})" },
-        skip_validations: true,
-        skip_revision: true,
-      )
+      post.revise(::Blog.gpt_bot, { raw: raw }, skip_validations: true, skip_revision: true)
 
-      #gpt_answer(new_post, commands_run: commands_run)
+      post.custom_fields[GPT_INSTRUCTION_FIELD] = [
+        { override: true },
+        { role: "assistant", content: "!image #{description}" },
+      ].to_json
+      post.save_custom_fields
     end
 
     # for testing

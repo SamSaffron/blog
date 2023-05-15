@@ -5,4 +5,7 @@ en:
     blog_corrupt_a_wish_topic_id: "Topic ID for Corrupt a Wish (blank for none)"
     blog_excluded_categories: "Categories to exclude from blog publishing"
     blog_allowed_gpt_pms_groups: "Groups allowed to use GPT PMs"
+    blog_stability_api_key: "API key for stability.ai (image generation)"
+    blog_serp_api_key: "API key for Google custom search (search engine results)"
+    blog_serp_api_cx: "API cx for Google custom search (search engine results)"
 
