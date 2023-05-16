@@ -116,6 +116,85 @@ module ::Jobs
       messages
     end
 
+    def local_search_prompt
+      messages = [{ role: "system", content: <<~TEXT }]
+        You are searchbot, you answer questions and generate text.
+        You understand Discourse Markdown and live in a Discourse Forum Message.
+        You are provided with the context of previous discussions.
+
+        You can complete some tasks using multiple steps and have access to some special commands!
+
+        The year is #{Time.zone.now.year}, much has changed since you were trained.
+
+        !image DETAILED_IMAGE_DESCRIPTION
+        !time RUBY_COMPATIBLE_TIMEZONE
+        !localsearch SEARCH_QUERY
+
+        !image will generate an image using DALL-E
+        !time will generate the time in a timezone
+        !localsearch will search the current discourse instance for results
+
+        Keep in mind, search on Discourse uses AND to and terms. Strip the query down to the most important terms.
+        Remove all stop words.
+        Cast a wide net instead of trying to be over specific.
+        Discourse orders by relevance out of the box, but you may want to sometimes prefer ordering on latest.
+
+        When generating answers ALWAYS try to use the !localsearch command first.
+        When generating answers ALWAYS try to reference specific local hyperlinks.
+        Always try to search the local instance first, even if your training data set may have an answer. It may be wrong.
+
+        YOUR LOCAL INFORMATION IS OUT OF DATE, YOU ARE TRAINED ON OLD DATA. Always try local search first.
+
+        Discourse search supports, the following special commands:
+
+        in:tagged: has at least 1 tag
+        in:untagged: has no tags
+        status:open: not closed or archived
+        status:closed: closed
+        status:public: topics that are not read restricted (eg: belong to a secure category)
+        status:archived: archived
+        status:noreplies: post count is 1
+        status:single_user: only a single user posted on the topic
+        post_count:X: only topics with X amount of posts
+        min_posts:X: topics containing a minimum of X posts
+        max_posts:X: topics with no more than max posts
+        in:pinned: in all pinned topics (either global or per category pins)
+        created:@USERNAME: topics created by a specific user
+        category:bug: topics in the bug category AND all subcategories
+        category:=bug: topics in the bug category excluding subcategories
+        #=bug: same as above (no sub categories)
+        #SLUG: try category first, then tag, then tag group
+        #SLUG:SLUG: used for subcategory search to disambiguate
+        min_views:100: topics containing 100 views or more
+        max_views:100: topics containing 100 views or less
+        tags:bug+feature: tagged both bug and feature
+        tags:bug,feature: tagged either bug or feature
+        -tags:bug+feature: excluding topics tagged bug and feature
+        -tags:bug,feature: excluding topics tagged bug or feature
+        l: order by post creation desc
+        order:latest: order by post creation desc
+        order:latest_topic: order by topic creation desc
+        order:views: order by topic views desc
+        order:likes: order by post like count - most liked posts first
+
+        Commands should be issued in single assistant message.
+
+        Example sessions:
+
+        User: draw a picture of THING
+        GPT: !image THING
+        User: THING GPT DOES NOT KNOW ABOUT
+        GPT: !search THING GPT DOES NOT KNOW ABOUT
+      TEXT
+
+      messages << { role: "user", content: "echo the text 'test'" }
+      messages << { role: "assistant", content: "!echo test" }
+      messages << { role: "user", content: "test" }
+      messages << { role: "assistant", content: "test was echoed" }
+
+      messages
+    end
+
     def artist_prompt
       messages = [{ role: "system", content: <<~TEXT }]
         You are an Artist and image creator, you answer questions and generate images using Dall-E 2
@@ -175,6 +254,9 @@ module ::Jobs
         elsif persona == 3
           debug "researcher"
           researcher_prompt
+        elsif persona == 4
+          debug "local search"
+          local_search_prompt
         else
           general_prompt
         end
@@ -316,6 +398,12 @@ module ::Jobs
       if command.start_with?("search")
         description = command.split(" ", 2).last
         generate_search(post, description, commands_run: commands_run)
+        return
+      end
+
+      if command.start_with?("localsearch")
+        description = command.split(" ", 2).last
+        generate_local_search(post, description, commands_run: commands_run)
         return
       end
 
@@ -488,6 +576,39 @@ module ::Jobs
           lookup[inner_post["id"]] = [inner_post["username"], inner_post["cooked"]]
         end
       end
+    end
+    def generate_local_search(post, description, commands_run:)
+      debug "PERFORMING SEARCH: #{description}"
+
+      results = Search.execute(description, guardian: Guardian.new())
+
+      json =
+        results
+          .posts
+          .map do |p|
+            {
+              title: p.topic.title,
+              url: p.url,
+              raw_truncated: p.raw[0..300],
+              excerpt: p.excerpt,
+              created: p.created_at,
+            }
+          end
+          .to_json
+
+      debug json
+
+      post.custom_fields[GPT_INSTRUCTION_FIELD] = [
+        { role: "assistant", content: "!localsearch #{description}" },
+        { role: "user", content: "RESULTS ARE: #{json}" },
+      ].to_json
+
+      post.save_custom_fields
+
+      post.raw = ""
+      post.save!(validate: false)
+
+      gpt_answer(post, commands_run: commands_run, new_post: post)
     end
 
     def generate_search(post, description, commands_run:)
