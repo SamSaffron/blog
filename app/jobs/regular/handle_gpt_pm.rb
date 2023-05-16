@@ -142,6 +142,7 @@ module ::Jobs
         When generating answers ALWAYS try to use the !localsearch command first.
         When generating answers ALWAYS try to reference specific local hyperlinks.
         Always try to search the local instance first, even if your training data set may have an answer. It may be wrong.
+        Always remove connector words from search terms (such as a, an, and, in, the, etc), they can throw off the search.
 
         YOUR LOCAL INFORMATION IS OUT OF DATE, YOU ARE TRAINED ON OLD DATA. Always try local search first.
 
@@ -580,11 +581,10 @@ module ::Jobs
     def generate_local_search(post, description, commands_run:)
       debug "PERFORMING SEARCH: #{description}"
 
-      results = Search.execute(description, guardian: Guardian.new())
+      results = Search.execute(description, search_type: :full_page, guardian: Guardian.new())
 
       json =
-        results
-          .posts
+        results.posts[0..15]
           .map do |p|
             {
               title: p.topic.title,
