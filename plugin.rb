@@ -105,15 +105,6 @@ end
 after_initialize do
   SeedFu.fixture_paths << File.expand_path("../db/fixtures", __FILE__)
 
-  add_to_serializer(:current_user, :gpt_bot_username) do
-    group_ids = SiteSetting.blog_allowed_gpt_pms_groups.split("|").map(&:to_i)
-    if groups.any? && object.groups.where(id: group_ids).exists?
-      ::Blog.gpt_bot.username
-    else
-      nil
-    end
-  end
-
   # got to patch this class to allow more hostnames
   class ::Middleware::EnforceHostname
     def call(env)
