@@ -8,9 +8,6 @@
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
 ::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
 
-register_asset "stylesheets/discuss.scss"
-register_svg_icon "robot"
-
 module ::BlogAdditions
   class Engine < ::Rails::Engine
     engine_name "blog_additions"
@@ -34,28 +31,6 @@ module ::Blog
 
   def self.gpt_bot
     @gpt_bot ||= User.find(-102)
-  end
-
-  def self.generate_dall_e_image(prompt, size: "1024x1024")
-    uri = URI.parse("https://api.openai.com/v1/images/generations")
-    request = Net::HTTP::Post.new(uri)
-    request.content_type = "application/json"
-    request["Authorization"] = "Bearer #{SiteSetting.blog_open_ai_api_key}"
-    request.body = { "prompt" => prompt, "n" => 1, "size" => size }.to_json
-
-    req_options = { use_ssl: uri.scheme == "https" }
-
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) { |http| http.request(request) }
-
-    if response.code == "200"
-      data = JSON.parse(response.body)
-      data["data"][0]["url"]
-    else
-      # Handle error
-      puts "Error: #{response.code}"
-      p response
-      raise "Error: could not generate image"
-    end
   end
 
   def self.open_ai_completion(messages, temperature: 1.0, top_p: 1.0, max_tokens: 700, model: nil)
@@ -158,8 +133,6 @@ after_initialize do
   load File.expand_path("../app/jobs/scheduled/blog_update_twitter.rb", __FILE__)
   load File.expand_path("../app/jobs/regular/corrupt_a_wish.rb", __FILE__)
   load File.expand_path("../lib/gpt_dispatcher.rb", __FILE__)
-  load File.expand_path("../lib/stability_image_generator.rb", __FILE__)
-  load File.expand_path("../lib/dalle_image_generator.rb", __FILE__)
 
   require_dependency "plugin/filter"
 

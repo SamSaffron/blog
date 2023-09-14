@@ -11,10 +11,3 @@ plugins:
     type: list
     list_type: category
     default: ""
-  blog_allowed_gpt_pms_groups:
-    type: list
-    list_type: group
-    default: ""
-  blog_serp_api_key: ""
-  blog_serp_api_cx: ""
-  blog_stability_api_key: ""
