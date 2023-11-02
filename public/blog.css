@@ -1,5 +1,4 @@
-$codebg: #fbfbfb;
-
+@charset "UTF-8";
 /*reset*/
 html,
 body,
@@ -70,19 +69,23 @@ td {
   text-align: left;
   vertical-align: baseline;
 }
+
 a img,
 :link img,
 :visited img {
   border: 0;
 }
+
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+
 ol,
 ul {
   list-style: none;
 }
+
 q:before,
 q:after,
 blockquote:before,
@@ -95,7 +98,6 @@ body {
 }
 
 /* my styles */
-
 #wrapper {
   width: 960px;
   margin: 0px auto;
@@ -103,7 +105,6 @@ body {
 }
 
 /* header style */
-
 #header {
   max-width: 960px;
   margin-left: auto;
@@ -115,7 +116,6 @@ body {
   margin: 0px;
   padding: 15px 15px 5px;
   height: 80px;
-
   background-color: #0f406c;
   border-bottom: 1px solid #aac;
 }
@@ -127,6 +127,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   /*text-shadow: 0px 4px 0px #1a456c;*/
 }
+
 #headerLogo .tagline {
   color: #ccc;
   margin-top: 11px;
@@ -155,6 +156,7 @@ body {
   padding: 0px;
   background-color: #001527;
 }
+
 #content .postTitle h2 a,
 #content .postTitle h2 a:visited,
 #content .postTitle h2 a:hover {
@@ -268,13 +270,14 @@ code {
 pre {
   margin: 10px;
   padding: 10px;
-  background: $codebg;
+  background: #fbfbfb;
   line-height: 25px;
   max-height: 600px;
   overflow: auto;
   width: auto;
   font-size: 1rem;
 }
+
 pre code {
   line-height: 1.4rem;
 }
@@ -359,6 +362,7 @@ pre code {
   margin-bottom: 2px;
   margin-top: 0px;
 }
+
 #content .postTitle p {
   margin: 0px;
   color: #999;
@@ -505,6 +509,7 @@ input {
 .download_summary {
   width: 800px;
 }
+
 .download_summary img {
   float: right;
   margin: 5px;
@@ -554,12 +559,12 @@ blockquote {
   margin: 0px;
   padding: 10px;
   background-color: #eee;
-  quotes: "\201C""\201D";
+  quotes: "“" "”";
   display: inline-block;
 }
 
 code {
-  background-color: $codebg;
+  background-color: #fbfbfb;
   padding: 0px;
 }
 
@@ -584,6 +589,7 @@ pre code {
   display: block;
   padding: 0.5em;
 }
+
 pre .comment,
 pre .annotation,
 pre .template_comment,
@@ -592,6 +598,7 @@ pre .chunk,
 pre .apache .cbracket {
   color: #008000;
 }
+
 pre .keyword,
 pre .id,
 pre .title,
@@ -603,6 +610,7 @@ pre .bash .variable,
 pre .tex .command {
   color: #00f;
 }
+
 pre .string,
 pre .title,
 pre .parent,
@@ -625,6 +633,7 @@ pre .date,
 pre .tex .formula {
   color: #a31515;
 }
+
 pre .ruby .string,
 pre .decorator,
 pre .filter .argument,
@@ -645,71 +654,36 @@ pre .tex .special,
 pre .input_number {
   color: #2b91af;
 }
+
 pre .phpdoc,
 pre .javadoc,
 pre .xmlDocTag {
   color: #808080;
 }
+
 pre .vhdl .type {
   font-weight: bold;
 }
+
 pre .vhdl .string {
   color: #666;
 }
+
 pre .vhdl .literal {
   color: #a31515;
 }
 
 button.thoughtbot {
   background-color: #ee432e;
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    color-stop(0%, #ee432e),
-    color-stop(50%, #c63929),
-    color-stop(50%, #b51700),
-    color-stop(100%, #891100)
-  );
-  background-image: -webkit-linear-gradient(
-    top,
-    #ee432e 0%,
-    #c63929 50%,
-    #b51700 50%,
-    #891100 100%
-  );
-  background-image: -moz-linear-gradient(
-    top,
-    #ee432e 0%,
-    #c63929 50%,
-    #b51700 50%,
-    #891100 100%
-  );
-  background-image: -ms-linear-gradient(
-    top,
-    #ee432e 0%,
-    #c63929 50%,
-    #b51700 50%,
-    #891100 100%
-  );
-  background-image: -o-linear-gradient(
-    top,
-    #ee432e 0%,
-    #c63929 50%,
-    #b51700 50%,
-    #891100 100%
-  );
-  background-image: linear-gradient(
-    top,
-    #ee432e 0%,
-    #c63929 50%,
-    #b51700 50%,
-    #891100 100%
-  );
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ee432e), color-stop(50%, #c63929), color-stop(50%, #b51700), color-stop(100%, #891100));
+  background-image: -webkit-linear-gradient(top, #ee432e 0%, #c63929 50%, #b51700 50%, #891100 100%);
+  background-image: -moz-linear-gradient(top, #ee432e 0%, #c63929 50%, #b51700 50%, #891100 100%);
+  background-image: -ms-linear-gradient(top, #ee432e 0%, #c63929 50%, #b51700 50%, #891100 100%);
+  background-image: -o-linear-gradient(top, #ee432e 0%, #c63929 50%, #b51700 50%, #891100 100%);
+  background-image: linear-gradient(top, #ee432e 0%, #c63929 50%, #b51700 50%, #891100 100%);
   border: 1px solid #951100;
   border-radius: 5px;
-  -webkit-box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4),
-    0 1px 3px #333333;
+  -webkit-box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333333;
   box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4), 0 1px 3px #333333;
   color: #fff;
   font: bold 1.5em "helvetica neue", helvetica, arial, sans-serif;
@@ -717,105 +691,29 @@ button.thoughtbot {
   text-align: center;
   text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8);
 }
+
 button.thoughtbot:hover {
   background-color: #f37873;
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    color-stop(0%, #f37873),
-    color-stop(50%, #db504d),
-    color-stop(50%, #cb0500),
-    color-stop(100%, #a20601)
-  );
-  background-image: -webkit-linear-gradient(
-    top,
-    #f37873 0%,
-    #db504d 50%,
-    #cb0500 50%,
-    #a20601 100%
-  );
-  background-image: -moz-linear-gradient(
-    top,
-    #f37873 0%,
-    #db504d 50%,
-    #cb0500 50%,
-    #a20601 100%
-  );
-  background-image: -ms-linear-gradient(
-    top,
-    #f37873 0%,
-    #db504d 50%,
-    #cb0500 50%,
-    #a20601 100%
-  );
-  background-image: -o-linear-gradient(
-    top,
-    #f37873 0%,
-    #db504d 50%,
-    #cb0500 50%,
-    #a20601 100%
-  );
-  background-image: linear-gradient(
-    top,
-    #f37873 0%,
-    #db504d 50%,
-    #cb0500 50%,
-    #a20601 100%
-  );
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f37873), color-stop(50%, #db504d), color-stop(50%, #cb0500), color-stop(100%, #a20601));
+  background-image: -webkit-linear-gradient(top, #f37873 0%, #db504d 50%, #cb0500 50%, #a20601 100%);
+  background-image: -moz-linear-gradient(top, #f37873 0%, #db504d 50%, #cb0500 50%, #a20601 100%);
+  background-image: -ms-linear-gradient(top, #f37873 0%, #db504d 50%, #cb0500 50%, #a20601 100%);
+  background-image: -o-linear-gradient(top, #f37873 0%, #db504d 50%, #cb0500 50%, #a20601 100%);
+  background-image: linear-gradient(top, #f37873 0%, #db504d 50%, #cb0500 50%, #a20601 100%);
   cursor: pointer;
 }
+
 button.thoughtbot:active {
   background-color: #d43c28;
-  background-image: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    color-stop(0%, #d43c28),
-    color-stop(50%, #ad3224),
-    color-stop(50%, #9c1500),
-    color-stop(100%, #700d00)
-  );
-  background-image: -webkit-linear-gradient(
-    top,
-    #d43c28 0%,
-    #ad3224 50%,
-    #9c1500 50%,
-    #700d00 100%
-  );
-  background-image: -moz-linear-gradient(
-    top,
-    #d43c28 0%,
-    #ad3224 50%,
-    #9c1500 50%,
-    #700d00 100%
-  );
-  background-image: -ms-linear-gradient(
-    top,
-    #d43c28 0%,
-    #ad3224 50%,
-    #9c1500 50%,
-    #700d00 100%
-  );
-  background-image: -o-linear-gradient(
-    top,
-    #d43c28 0%,
-    #ad3224 50%,
-    #9c1500 50%,
-    #700d00 100%
-  );
-  background-image: linear-gradient(
-    top,
-    #d43c28 0%,
-    #ad3224 50%,
-    #9c1500 50%,
-    #700d00 100%
-  );
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #d43c28), color-stop(50%, #ad3224), color-stop(50%, #9c1500), color-stop(100%, #700d00));
+  background-image: -webkit-linear-gradient(top, #d43c28 0%, #ad3224 50%, #9c1500 50%, #700d00 100%);
+  background-image: -moz-linear-gradient(top, #d43c28 0%, #ad3224 50%, #9c1500 50%, #700d00 100%);
+  background-image: -ms-linear-gradient(top, #d43c28 0%, #ad3224 50%, #9c1500 50%, #700d00 100%);
+  background-image: -o-linear-gradient(top, #d43c28 0%, #ad3224 50%, #9c1500 50%, #700d00 100%);
+  background-image: linear-gradient(top, #d43c28 0%, #ad3224 50%, #9c1500 50%, #700d00 100%);
   -webkit-box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4);
   box-shadow: inset 0 0 0 1px rgba(255, 115, 100, 0.4);
 }
-
-// onebox
 
 .onebox h4 {
   text-overflow: ellipsis;
@@ -823,20 +721,18 @@ button.thoughtbot:active {
   white-space: nowrap;
   color: #444;
   font-size: 0.8rem;
-  a {
-    color: #444;
-    font-size: 0.8rem;
-  }
+}
+.onebox h4 a {
+  color: #444;
+  font-size: 0.8rem;
 }
 
 a.loading-onebox {
-  background: {
-    image: image-url("spinner_96.gif");
-    position: 0;
-    size: 20px;
-    height: 25px;
-    repeat: no-repeat;
-  }
+  background-image: image-url("spinner_96.gif");
+  background-position: 0;
+  background-size: 20px;
+  background-height: 25px;
+  background-repeat: no-repeat;
   padding-left: 25px;
 }
 
@@ -844,114 +740,90 @@ a.loading-onebox {
   margin-top: 15px;
   padding: 12px 25px 12px 12px;
   font-size: 14px;
-  > .source {
-    margin-bottom: 12px;
-    margin-right: 10px;
-    display: block;
-    position: relative;
-    height: 20px;
-    .info {
-      a {
-        color: black;
-        text-decoration: none;
-        padding-right: 10px;
-      }
-      position: absolute;
-      font-size: 14px;
-      img.favicon {
-        margin-right: 3px;
-      }
-    }
-  }
-
-  .onebox-result-body {
-    padding-top: 5px;
-    img {
-      max-height: 80%;
-      max-width: 25%;
-      height: auto;
-      float: left;
-      margin-right: 10px;
-    }
-    h3,
-    h4 {
-      margin: 0 !important;
-    }
-    code {
-      max-height: 400px;
-    }
-    .metrics {
-      clear: both;
-      padding-bottom: 25px;
-      .metric {
-        display: inline-block;
-        padding-left: 33px;
-        float: left;
-      }
-    }
-  }
+}
+.onebox-result > .source {
+  margin-bottom: 12px;
+  margin-right: 10px;
+  display: block;
+  position: relative;
+  height: 20px;
+}
+.onebox-result > .source .info {
+  position: absolute;
+  font-size: 14px;
+}
+.onebox-result > .source .info a {
+  color: black;
+  text-decoration: none;
+  padding-right: 10px;
+}
+.onebox-result > .source .info img.favicon {
+  margin-right: 3px;
+}
+.onebox-result .onebox-result-body {
+  padding-top: 5px;
+}
+.onebox-result .onebox-result-body img {
+  max-height: 80%;
+  max-width: 25%;
+  height: auto;
+  float: left;
+  margin-right: 10px;
+}
+.onebox-result .onebox-result-body h3,
+.onebox-result .onebox-result-body h4 {
+  margin: 0 !important;
+}
+.onebox-result .onebox-result-body code {
+  max-height: 400px;
+}
+.onebox-result .onebox-result-body .metrics {
+  clear: both;
+  padding-bottom: 25px;
+}
+.onebox-result .onebox-result-body .metrics .metric {
+  display: inline-block;
+  padding-left: 33px;
+  float: left;
 }
 
-// RottenTomatoes Onebox
-.onebox-result {
-  .onebox-result-body {
-    img.verdict {
-      float: none;
-      margin-right: 7px;
-    }
-    img.popcorn {
-      float: none;
-      margin-left: 20px;
-      margin-right: 5px;
-    }
-  }
+.onebox-result .onebox-result-body img.verdict {
+  float: none;
+  margin-right: 7px;
 }
-
-@mixin onebox-favicon($class, $image) {
-  &.#{$class} .source {
-    background-image: image-url("favicons/#{$image}.png");
-    background-repeat: no-repeat;
-    padding-left: 20px;
-  }
+.onebox-result .onebox-result-body img.popcorn {
+  float: none;
+  margin-left: 20px;
+  margin-right: 5px;
 }
 
 aside.onebox {
   padding: 12px 25px 12px 12px;
   font-size: 14px;
-  background-color: $codebg;
+  background-color: #fbfbfb;
   margin-top: 10px;
-
-  header {
-    a[href] {
-      text-decoration: none;
-      color: #444;
-    }
-  }
-
-  .onebox-body {
-    clear: both;
-
-    h3,
-    h4 {
-      font-size: 1.17em;
-      margin: 10px 0 !important;
-    }
-
-    a[href] {
-      text-decoration: none;
-    }
-
-    a[href]:visited {
-    }
-
-    img {
-      max-height: 80%;
-      max-width: 25%;
-      height: auto;
-      float: left;
-      margin-right: 10px;
-    }
-  }
+}
+aside.onebox header a[href] {
+  text-decoration: none;
+  color: #444;
+}
+aside.onebox .onebox-body {
+  clear: both;
+}
+aside.onebox .onebox-body h3,
+aside.onebox .onebox-body h4 {
+  font-size: 1.17em;
+  margin: 10px 0 !important;
+}
+aside.onebox .onebox-body a[href] {
+  text-decoration: none;
+}
+aside.onebox .onebox-body img {
+  max-height: 80%;
+  max-width: 25%;
+  height: auto;
+  float: left;
+  margin-right: 10px;
 }
 
 .onebox-avatar {
@@ -959,12 +831,6 @@ aside.onebox {
   width: 90px !important;
 }
 
-blockquote {
-  aside.onebox {
-  }
-}
-
-// -- Onebox Github Code Blob --
 pre.onebox code ol.lines li:before {
   position: absolute;
   display: inline-block;
@@ -984,6 +850,7 @@ pre.onebox code ol {
   margin-left: 0px;
   line-height: 1.5em;
 }
+
 pre.onebox code li {
   background-color: #fff;
   padding-left: 5px;
@@ -999,7 +866,7 @@ pre.onebox code ol.lines li {
   padding-left: 5px;
   margin-left: 0px;
   border-left: 1px solid #cfcfcf;
-  min-height: 1.5em; //show empty li lines
+  min-height: 1.5em;
   white-space: pre;
 }
 
@@ -1011,7 +878,6 @@ pre.onebox code {
   white-space: normal;
 }
 
-//Onebox - Github - Pull request
 .onebox-body .github-commit-status {
   background: #f5f5f5;
   border-radius: 5px;
@@ -1041,9 +907,11 @@ pre.onebox code {
 .onebox-body .status_tag.open {
   background-color: #6cc644;
 }
+
 .onebox-body .status_tag.merged {
   background-color: #6e5494;
 }
+
 .onebox-body .status_tag.closed {
   background-color: #bd2c00;
 }
@@ -1056,7 +924,6 @@ small {
   font-size: 10px;
 }
 
-// responsive stuff
 @media (max-width: 1000px), (max-device-width: 500px) {
   #header {
     max-width: 100%;
@@ -1076,7 +943,6 @@ small {
     margin-left: 10px;
   }
 }
-
 code {
   word-wrap: break-word;
 }
@@ -1089,22 +955,17 @@ code {
     display: none;
   }
 }
-
 @media (max-device-width: 500px) {
   #headerLogo {
     height: 140px;
   }
-
   #content ol {
     margin-left: 50px;
   }
-
   html {
     font-size: 2rem;
   }
 }
-
-// stop giant links breaking my CSS
 a {
   word-wrap: break-word;
 }
@@ -1114,21 +975,21 @@ a {
   height: 16px;
 }
 
-// highlight
-
 .hljs {
   display: block;
   overflow-x: auto;
   padding: 0.5em;
-  background: $codebg;
+  background: #fbfbfb;
   -webkit-text-size-adjust: none;
 }
+
 .hljs,
 .hljs-subst,
 .hljs-tag .hljs-title,
 .nginx .hljs-title {
   color: black;
 }
+
 .hljs-string,
 .hljs-title,
 .hljs-constant,
@@ -1157,6 +1018,7 @@ a {
 .coffeescript .hljs-attribute {
   color: #800;
 }
+
 .smartquote,
 .hljs-comment,
 .hljs-annotation,
@@ -1166,6 +1028,7 @@ a {
 .markdown .hljs-blockquote {
   color: #888;
 }
+
 .hljs-number,
 .hljs-date,
 .hljs-regexp,
@@ -1183,6 +1046,7 @@ a {
 .markdown .hljs-link_url {
   color: #080;
 }
+
 .hljs-label,
 .hljs-javadoc,
 .ruby .hljs-string,
@@ -1214,6 +1078,7 @@ a {
 .hljs-phony {
   color: #88f;
 }
+
 .hljs-keyword,
 .hljs-id,
 .hljs-title,
@@ -1236,13 +1101,16 @@ a {
 .hljs-status {
   font-weight: bold;
 }
+
 .asciidoc .hljs-emphasis,
 .markdown .hljs-emphasis {
   font-style: italic;
 }
+
 .nginx .hljs-built_in {
   font-weight: normal;
 }
+
 .coffeescript .javascript,
 .javascript .xml,
 .lasso .markup,

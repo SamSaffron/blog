@@ -62,7 +62,6 @@ module ::Blog
     http.request(request) do |response|
       if !block_given?
         body = response.read_body
-        p body
         return JSON.parse(body)["choices"][0]["message"]["content"]
       end
 
@@ -94,8 +93,6 @@ module ::Blog
     raise
   end
 end
-
-Rails.configuration.assets.precompile += %w[LAB.js blog.css]
 
 if Rails.env.development?
   require "middleware/enforce_hostname"
