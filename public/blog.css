@@ -335,7 +335,7 @@ pre code {
 
 #content h3 {
   margin-bottom: 10px;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: bold;
   margin-top: 2rem;
 }
@@ -799,7 +799,7 @@ a.loading-onebox {
 
 aside.onebox {
   padding: 12px 25px 12px 12px;
-  font-size: 14px;
+  font-size: 1.5em;
   background-color: #fbfbfb;
   margin-top: 10px;
   border: 1px solid #d7d7d7;
