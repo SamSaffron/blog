@@ -802,6 +802,8 @@ aside.onebox {
   font-size: 14px;
   background-color: #fbfbfb;
   margin-top: 10px;
+  border: 1px solid #d7d7d7;
+  border-radius: 4px;
 }
 aside.onebox header a[href] {
   text-decoration: none;
