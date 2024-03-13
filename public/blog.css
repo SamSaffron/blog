@@ -1128,3 +1128,9 @@ textarea#secret {
   width: 100%;
   height: 500px;
 }
+
+details {
+  margin: 1em 0;
+  padding: 1em;
+  background-color: #f9f9f9;
+}
