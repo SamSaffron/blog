@@ -798,7 +798,7 @@ a.loading-onebox {
 }
 
 aside.onebox {
-  padding: 1em 1em 0.5em;
+  padding: 1em 0.5em 0.2em;
   font-size: 1.5em;
   background-color: #fbfbfb;
   border: 1px solid #d7d7d7;
