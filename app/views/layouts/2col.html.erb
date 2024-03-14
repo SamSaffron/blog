@@ -12,6 +12,14 @@
   <link rel="alternate" type="application/rss+xml" title="Sam Saffron's Blog (RSS 2.0)" href="http://samsaffron.com/posts.rss"  />
   <title><%= yield :title  %></title>
   <link rel="stylesheet" href="/plugins/blog/blog.css?3">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-R0J1KS9879"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-R0J1KS9879');
+  </script>
 </head>
 
 <body>
@@ -48,14 +56,6 @@
 			syndication: <%= link_to "rss", "/posts.rss" %> <%= link_to "atom", "/posts.atom" %>
 		</div>
 	</div>
-
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-50203-9']);
-    _gaq.push(['_trackPageview']);
-    _gaq.push(['_setSiteSpeedSampleRate', 20]);
-  </script>
-
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
 
@@ -66,6 +66,5 @@
       })
     })
   </script>
-  <script type="text/javascript" src="https://www.google-analytics.com/ga.js"></script>
 </body>
 
