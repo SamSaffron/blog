@@ -18,7 +18,7 @@ module Blog
     end
 
     def age(date)
-      FreedomPatches::Rails4.time_ago_in_words(date, false, scope: :'datetime.distance_in_words_verbose')
+      time_ago_in_words(date, scope: :'datetime.distance_in_words_verbose')
     end
 
     def latest_answers
