@@ -1,4 +1,14 @@
 @charset "UTF-8";
+
+/* Import Inter with variable font features */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap');
+
+/* Define variables at root */
+:root {
+  --font-primary: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+}
+
 /*reset*/
 html,
 body,
@@ -224,47 +234,60 @@ body {
   line-height: 1.1rem;
 }
 
+
+/* Sidebar sections */
 #sidebar .section {
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #e4eaff; /* #e1f3ff*/
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background-color: #f8fafc;  /* Lighter, more subtle background */
+  border: 1px solid #e2e8f0;  /* Subtle border instead of border-radius */
+  font-size: 0.9rem;
 }
 
-#sidebar .section p {
-  margin-top: 10px;
-  line-height: 1.2rem;
-}
-
+/* Section headings */
 #sidebar .section h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-top: 5px;
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;  /* Darker, more pronounced heading */
+  margin-bottom: 1rem;
+  letter-spacing: -0.01em;
 }
 
+/* Links within sidebar */
 #sidebar a:link,
 #sidebar a:visited {
-  color: #0f406c;
+  color: #2563eb;  /* Consistent with main content links */
+  text-decoration: none;
+}
+
+#sidebar a:hover {
+  text-decoration: underline;
+}
+
+/* Section content */
+#sidebar .section p,
+#sidebar .section ul {
+  color: #475569;  /* Softer text color */
+  line-height: 1.5;
+  margin-top: 0.5rem;
+}
+
+#sidebar .section li {
+  margin-top: 0.5rem;
+  line-height: 1.4;
 }
 
 a:link,
 a:visited {
   text-decoration: none;
-  color: blue;
+  color: #2563eb;
 }
 
 a:hover {
   text-decoration: underline;
   border-bottom-width: 0px;
   border-bottom-style: none;
-}
-
-pre,
-code {
-  font-family: "Consolas", "Monaco", "Courier New", Courier, monospace;
 }
 
 pre {
@@ -280,64 +303,74 @@ pre {
 
 pre code {
   line-height: 1.4rem;
+  font-family: var(--font-mono);
 }
 
 #content body,
 #content p,
 #content ol,
 #content ul,
-#content li,
-#content h2,
-#content h3 {
-  font-size: 1.05rem;
-  line-height: 1.6rem;
+#content details,
+#content li {
+  font-size: 1.1rem;
+  line-height: 1.5;
   margin: 3px;
-  font-family: "Open Sans", Verdana, Sans-Serif;
-  color: #444;
+  font-family: var(--font-primary);
+  color: #2c353d;
+  font-feature-settings: "liga" 1, "kern" 1;
+  font-variation-settings: "opsz" 16;  /* Optimized for text size */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #content p {
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
-#content ul {
-  list-style: square;
-  margin-left: 25px;
-}
-
-#content ol {
-  list-style: decimal;
-  margin-left: 25px;
-}
-
-#content h1,
-#content h2,
-#content h3,
-#content h4,
-#content strong,
-#content em,
-#content b {
-  font-family: arial, helvetica, sans-serif, verdana;
-  font-weight: bold;
-}
-
+/* Heading styles with optical size adjustments */
 #content h1 {
+  font-family: var(--font-primary);
   font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 32;  /* Larger optical size for headlines */
   margin: 15px 0px;
 }
 
 #content h2 {
+  font-family: var(--font-primary);
   font-size: 1.7rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 28;  /* Adjusted for subheadlines */
   margin-bottom: 15px;
   margin-top: 2.5rem;
 }
 
 #content h3 {
-  margin-bottom: 10px;
+  font-family: var(--font-primary);
   font-size: 1.3rem;
-  font-weight: bold;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variation-settings: "opsz" 24;  /* Adjusted for smaller headlines */
+  margin-bottom: 10px;
   margin-top: 2rem;
+}
+
+#content ul {
+  margin-left: 1rem;
+  list-style-type: disc;
+  margin-bottom: 1rem;
+}
+
+#content ol {
+  margin-left: 1rem;
+  list-style-type: decimal;
+  margin-bottom: 1rem;
+}
+
+#content details p {
+  margin-top: 1rem;
 }
 
 .metadata {
