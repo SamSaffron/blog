@@ -292,7 +292,7 @@ a:hover {
 
 pre {
   margin: 1rem 1rem 1rem 0;
-  padding: 0.5rem;
+  padding: 0.2rem;
   background: #fbfbfb;
   line-height: 25px;
   max-height: 600px;
@@ -302,8 +302,24 @@ pre {
 }
 
 pre code {
+  display: block;
+  padding: 0.5em;
   line-height: 1.4rem;
   font-family: var(--font-mono);
+  font-size: 1.1rem;
+}
+
+@media (max-device-width: 500px) {
+  pre {
+    margin: 1rem -10px;  /* Extend to edges on mobile */
+    padding: 0.1rem;
+    font-size: 1.2rem;   /* Slightly larger on mobile */
+  }
+  pre code {
+    font-size: 1.4rem;   /* Ensure readable size on mobile */
+    line-height: 1.2;    /* More spacing between lines */
+    font-weight: 500;    /* Maintain medium weight for readability */
+  }
 }
 
 #content body,
@@ -618,10 +634,6 @@ code {
   padding-left: 0;
 }
 
-pre code {
-  display: block;
-  padding: 0.5em;
-}
 
 pre .comment,
 pre .annotation,
