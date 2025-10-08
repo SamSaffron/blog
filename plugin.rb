@@ -6,8 +6,7 @@
 # authors: Sam Saffron
 
 ::BLOG_HOST = Rails.env.development? ? "dev.samsaffron.com" : "samsaffron.com"
-::BLOG_DISCOURSE =
-  Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
+::BLOG_DISCOURSE = Rails.env.development? ? "l.discourse" : "discuss.samsaffron.com"
 
 module ::BlogAdditions
   class Engine < ::Rails::Engine
@@ -34,19 +33,13 @@ module ::Blog
     @gpt_bot ||= User.find(-102)
   end
 
-  def self.open_ai_completion(
-    messages,
-    temperature: 1.0,
-    top_p: 1.0,
-    max_tokens: 700,
-    model: nil
-  )
+  def self.open_ai_completion(messages, temperature: 1.0, top_p: 1.0, max_tokens: 700, model: nil)
     return if SiteSetting.blog_open_ai_api_key.blank?
 
     url = URI("https://api.openai.com/v1/chat/completions")
     headers = {
       "Content-Type": "application/json",
-      Authorization: "Bearer #{SiteSetting.blog_open_ai_api_key}"
+      Authorization: "Bearer #{SiteSetting.blog_open_ai_api_key}",
     }
     payload = {
       model: model || SiteSetting.blog_open_ai_model,
@@ -54,7 +47,7 @@ module ::Blog
       max_tokens: max_tokens,
       top_p: top_p,
       temperature: temperature,
-      stream: block_given?
+      stream: block_given?,
     }
 
     http = Net::HTTP.new(url.host, url.port)
@@ -103,8 +96,7 @@ end
 
 if Rails.env.development?
   require "middleware/enforce_hostname"
-  Rails.configuration.middleware.insert_after Rack::MethodOverride,
-  Middleware::EnforceHostname
+  Rails.configuration.middleware.insert_after Rack::MethodOverride, Middleware::EnforceHostname
 end
 
 after_initialize do
@@ -113,16 +105,39 @@ after_initialize do
   # got to patch this class to allow more hostnames
   class ::Middleware::EnforceHostname
     def call(env)
-      hostname =
-        env[Rack::Request::HTTP_X_FORWARDED_HOST].presence ||
-          env[Rack::HTTP_HOST]
+      hostname = env[Rack::Request::HTTP_X_FORWARDED_HOST].presence || env[Rack::HTTP_HOST]
 
       env[Rack::Request::HTTP_X_FORWARDED_HOST] = nil
 
       path = env["PATH_INFO"] || ""
       is_ai_share = path.start_with?("/discourse-ai/ai-bot/shared-ai")
 
-      if hostname == ::BLOG_HOST && !is_ai_share
+      # In development, check for blog mode via query parameter or cookie
+      is_blog_mode = false
+      if Rails.env.development?
+        request = Rack::Request.new(env)
+        query_string = env["QUERY_STRING"] || ""
+
+        # Check if user is explicitly setting blog mode via query param
+        if query_string.include?("blog=1")
+          is_blog_mode = true
+          # Set cookie to remember preference
+          Rack::Utils.set_cookie_header!(
+            env,
+            "blog_mode",
+            { value: "1", path: "/", expires: Time.now + 30.days },
+          )
+        elsif query_string.include?("blog=0")
+          is_blog_mode = false
+          # Clear cookie
+          Rack::Utils.delete_cookie_header!(env, "blog_mode", { path: "/" })
+        else
+          # Check cookie for persistent blog mode
+          is_blog_mode = request.cookies["blog_mode"] == "1"
+        end
+      end
+
+      if (hostname == ::BLOG_HOST || is_blog_mode) && !is_ai_share
         env[Rack::HTTP_HOST] = ::BLOG_HOST
       else
         env[Rack::HTTP_HOST] = ::BLOG_DISCOURSE
@@ -154,6 +169,13 @@ after_initialize do
 
   class BlogConstraint
     def matches?(request)
+      # In development, check for blog mode via query parameter or cookie
+      if Rails.env.development?
+        return true if request.params["blog"] == "1"
+        return false if request.params["blog"] == "0"
+        return true if request.cookies["blog_mode"] == "1"
+      end
+
       request.host == BLOG_HOST
     end
   end
@@ -164,8 +186,7 @@ after_initialize do
 
     def ensure_permalink
       unless custom_fields["permalink"]
-        custom_fields["permalink"] = (Time.now.strftime "/archive/%Y/%m/%d/") +
-          self.slug
+        custom_fields["permalink"] = (Time.now.strftime "/archive/%Y/%m/%d/") + self.slug
       end
     end
 
@@ -180,7 +201,5 @@ after_initialize do
     mount ::Blog::Engine, at: "/", constraints: BlogConstraint.new
   end
 
-  Discourse::Application.routes.append do
-    mount ::BlogAdditions::Engine, at: "/blog"
-  end
+  Discourse::Application.routes.append { mount ::BlogAdditions::Engine, at: "/blog" }
 end
