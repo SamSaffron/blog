@@ -1316,13 +1316,18 @@ pre.onebox code li {
     padding: 0 var(--space-3);
   }
   
+  #header {
+    margin-left: calc(-1 * var(--space-3));
+    margin-right: calc(-1 * var(--space-3));
+  }
+  
   #headerLogo {
     padding: var(--space-4);
+    border-radius: 0;
   }
   
   #navbar {
-    margin-left: calc(-1 * var(--space-3));
-    margin-right: calc(-1 * var(--space-3));
+    border-radius: 0;
   }
   
   pre {
