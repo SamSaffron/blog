@@ -8,10 +8,11 @@
 </h2>
 <%= render :partial => "blog/posts/post", :collection => @posts[1..-1] %>
 
-<hr>
-<button class="thoughtbot" onclick="JavaScript: window.location ='http://<%=::BLOG_DISCOURSE%>/t/<%=@topic.slug%>/<%=@topic.id%>/<%=@posts[-1].post_number%>'">Leave a Comment</button>
-<p>
+<div class="comment-section">
+  <h3>Join the discussion</h3>
+  <p>What do you think?</p>
+  <button class="thoughtbot" onclick="JavaScript: window.location ='http://<%=::BLOG_DISCOURSE%>/t/<%=@topic.slug%>/<%=@topic.id%>/<%=@posts[-1].post_number%>'">Leave a Comment</button>
   <small>
     comments powered by <a href="http://<%=::BLOG_DISCOURSE%>">Discourse</a>
   </small>
-</p>
+</div>
