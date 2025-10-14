@@ -10,6 +10,9 @@
   <meta content="Sam, Saffron, .NET, C#, Ruby, Rails, Weblog, SQL, Blog" name="keywords" />
   <meta name="description" content="Sam's Spot - Sam saffron's web log" />
   <%= csrf_meta_tag %>
+  <%- if SiteSetting.site_favicon_url.present? %>
+  <link rel="icon" type="image/png" href="<%= SiteSetting.site_favicon_url %>">
+  <%- end %>
   <link rel="alternate" type="application/rss+xml" title="Sam Saffron's Blog (RSS 2.0)" href="http://samsaffron.com/posts.rss"  />
   <title><%= yield :title  %></title>
   <link rel="stylesheet" href="/plugins/blog/blog.css?v=34">
