@@ -1,0 +1,85 @@
+.blog-share-token-modal {
+  .tokens-list {
+    margin-bottom: 20px;
+
+    .token-item {
+      border: 1px solid var(--primary-low);
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: var(--secondary);
+
+      .token-info {
+        .token-url {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 10px;
+
+          .token-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--primary-low);
+            border-radius: 4px;
+            background: var(--secondary);
+            color: var(--primary);
+            font-family: monospace;
+            font-size: 14px;
+          }
+
+          .copy-btn {
+            white-space: nowrap;
+          }
+        }
+
+        .token-meta {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .expires-at {
+            color: var(--primary-medium);
+            font-size: 14px;
+          }
+
+          .delete-btn {
+            padding: 6px 12px;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .no-tokens {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--primary-medium);
+
+      p {
+        margin: 0;
+        font-size: 14px;
+      }
+    }
+  }
+
+  .create-token-section {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--primary-low);
+
+    .create-token-btn {
+      padding: 12px 24px;
+      font-size: 16px;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .loading-container {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--primary-medium);
+  }
+}

@@ -110,6 +110,27 @@ end
 after_initialize do
   SeedFu.fixture_paths << File.expand_path("../db/fixtures", __FILE__)
 
+  # Load Guardian patch for anonymous topic access
+  require_relative("lib/guardian_patch.rb")
+
+  # Apply the Guardian patch
+  Guardian.prepend(GuardianPatch)
+
+  # Load topic share token model and controller
+  require_relative("app/models/topic_share_token.rb")
+  require_relative("app/controllers/blog/topic_share_tokens_controller.rb")
+  require_relative("lib/topic_serializer_extension.rb")
+
+  # Add association to Topic model
+  reloadable_patch do |plugin|
+    Topic.class_eval { has_many :topic_share_tokens, dependent: :destroy }
+  end
+
+  # Extend TopicViewSerializer
+  reloadable_patch do
+    ::TopicViewSerializer.prepend(Blog::TopicViewSerializerExtension)
+  end
+
   # got to patch this class to allow more hostnames
   class ::Middleware::EnforceHostname
     def call(env)
@@ -127,8 +148,14 @@ after_initialize do
       set_blog_cookie = nil
       clear_blog_cookie = false
 
+      request = Rack::Request.new(env)
+
+      # Capture share token for Guardian access via Thread.current
+      if request.params["token"]
+        Thread.current[:share_token_value] = request.params["token"]
+      end
+
       if Rails.env.development?
-        request = Rack::Request.new(env)
         query_string = env["QUERY_STRING"] || ""
 
         # Check if user is explicitly setting blog mode via query param
@@ -153,6 +180,9 @@ after_initialize do
       end
 
       status, headers, body = @app.call(env)
+
+      # Clean up Thread.current after request completes
+      Thread.current[:share_token_value] = nil
 
       # Set or clear cookie in the response
       if set_blog_cookie
@@ -227,5 +257,12 @@ after_initialize do
 
   Discourse::Application.routes.append do
     mount ::BlogAdditions::Engine, at: "/blog"
+
+    # Topic share token routes
+    resources :topics, only: [] do
+      resources :topic_share_tokens,
+                only: %i[index create destroy],
+                controller: "blog/topic_share_tokens"
+    end
   end
 end
