@@ -1,0 +1,34 @@
+<% content_for :title do %>
+  All Done!
+<% end %>
+
+<div class="all-rated-container">
+  <div class="congrats">
+    <h1>You've rated all the patches!</h1>
+    <p class="congrats-emoji">&#127881;</p>
+    <p>Great job! You've rated every single patch in the system.</p>
+  </div>
+
+  <div class="stats-summary">
+    <h3>Your Stats</h3>
+    <div class="stat-grid">
+      <div class="stat-item">
+        <span class="stat-value"><%= @user_stats[:total_rated] %></span>
+        <span class="stat-label">Total Rated</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value hot"><%= @user_stats[:hot_votes] %></span>
+        <span class="stat-label">HOT votes</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value not"><%= @user_stats[:not_votes] %></span>
+        <span class="stat-label">NOT votes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/hot-or-not/leaderboard" class="btn-primary">View Leaderboard</a>
+    <a href="/hot-or-not/stats" class="btn-secondary">View My Stats</a>
+  </div>
+</div>

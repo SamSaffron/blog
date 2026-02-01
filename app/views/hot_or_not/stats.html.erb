@@ -1,0 +1,102 @@
+<% content_for :title do %>
+  My Stats
+<% end %>
+
+<div class="stats-container">
+  <% if @user_stats %>
+    <div class="stats-hero">
+      <h1>Your Rating Journey</h1>
+      <p class="stats-subtitle">You've rated <strong><%= @user_stats[:total_rated] %></strong> of <strong><%= @user_stats[:total_rated] + @user_stats[:remaining] %></strong> patches</p>
+
+      <div class="progress-ring-container">
+        <% total = @user_stats[:total_rated] + @user_stats[:remaining] %>
+        <% pct = total > 0 ? (@user_stats[:total_rated].to_f / total * 100).round : 0 %>
+        <svg class="progress-ring" viewBox="0 0 120 120">
+          <circle class="progress-ring-bg" cx="60" cy="60" r="54" />
+          <circle class="progress-ring-fill" cx="60" cy="60" r="54"
+                  stroke-dasharray="339.292"
+                  stroke-dashoffset="<%= 339.292 * (1 - pct / 100.0) %>" />
+        </svg>
+        <div class="progress-ring-text">
+          <span class="progress-pct"><%= pct %>%</span>
+          <span class="progress-label">complete</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-cards">
+      <div class="stats-card hot-card">
+        <div class="card-value"><%= @user_stats[:hot_votes] %></div>
+        <div class="card-label">HOT</div>
+      </div>
+      <div class="stats-card not-card">
+        <div class="card-value"><%= @user_stats[:not_votes] %></div>
+        <div class="card-label">NOT</div>
+      </div>
+      <div class="stats-card remaining-card">
+        <div class="card-value"><%= @user_stats[:remaining] %></div>
+        <div class="card-label">Remaining</div>
+      </div>
+    </div>
+
+    <% if @user_stats[:total_rated] > 0 %>
+      <div class="voting-pattern">
+        <h3>Your Voting Pattern</h3>
+        <% hot_pct = (@user_stats[:hot_votes].to_f / @user_stats[:total_rated] * 100).round %>
+        <div class="pattern-bar">
+          <div class="pattern-hot" style="width: <%= hot_pct %>%">
+            <% if hot_pct >= 15 %><span><%= hot_pct %>%</span><% end %>
+          </div>
+          <div class="pattern-not" style="width: <%= 100 - hot_pct %>%">
+            <% if (100 - hot_pct) >= 15 %><span><%= 100 - hot_pct %>%</span><% end %>
+          </div>
+        </div>
+        <div class="pattern-legend">
+          <span class="legend-hot">HOT</span>
+          <span class="legend-not">NOT</span>
+        </div>
+        <p class="pattern-insight">
+          <% if hot_pct > 60 %>
+            You're an optimist! You see the good in most patches.
+          <% elsif hot_pct < 40 %>
+            You have high standards - most patches don't impress you.
+          <% else %>
+            You're balanced - you call it like you see it.
+          <% end %>
+        </p>
+      </div>
+    <% end %>
+
+    <% if @recent_ratings.any? %>
+      <div class="recent-activity">
+        <h3>Recent Activity</h3>
+        <div class="activity-list">
+          <% @recent_ratings.each do |rating| %>
+            <a href="/hot-or-not/<%= rating.patch.id %>" class="activity-item">
+              <span class="activity-vote <%= rating.is_hot ? 'hot' : 'not' %>">
+                <%= rating.is_hot ? "HOT" : "NOT" %>
+              </span>
+              <span class="activity-info">
+                <span class="activity-title"><%= rating.patch.title.sub(/^Audit Fix:\s*/i, '').truncate(55) %></span>
+                <span class="activity-meta">
+                  <code><%= rating.patch.commit_hash[0..7] %></code>
+                  <span class="activity-date"><%= rating.created_at.strftime("%b %d") %></span>
+                  <span class="activity-community"><%= rating.patch.hot_ratio %>% approval</span>
+                </span>
+              </span>
+            </a>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @user_stats[:remaining] > 0 %>
+      <div class="stats-cta">
+        <a href="/hot-or-not" class="cta-button">
+          Keep Rating
+          <span class="cta-count"><%= @user_stats[:remaining] %> left</span>
+        </a>
+      </div>
+    <% end %>
+  <% end %>
+</div>

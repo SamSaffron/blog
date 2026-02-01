@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <%= csrf_meta_tag %>
+  <%- if SiteSetting.site_favicon_url.present? %>
+  <link rel="icon" type="image/png" href="<%= SiteSetting.site_favicon_url %>">
+  <%- end %>
+  <title><%= yield(:title).presence || "Hot or Not" %></title>
+  <link rel="stylesheet" href="/plugins/blog/blog.css?v=34">
+  <link rel="stylesheet" href="/plugins/blog/hot-or-not.css?v=3">
+</head>
+
+<body class="hot-or-not-page">
+  <div id="wrapper">
+    <header class="hon-header">
+      <a href="/hot-or-not" class="hon-logo">Hot or Not</a>
+      <nav class="hon-nav">
+        <a href="/hot-or-not">Rate</a>
+        <a href="/hot-or-not/leaderboard">Leaderboard</a>
+        <a href="/hot-or-not/stats">Stats</a>
+        <% if current_user&.admin? %>
+        <a href="/hot-or-not/admin/patches">Admin</a>
+        <% end %>
+        <a href="/" class="hon-back">Forum</a>
+      </nav>
+    </header>
+    <main class="hon-main">
+      <% if flash[:notice] %>
+        <div class="flash notice"><%= flash[:notice] %></div>
+      <% end %>
+      <% if flash[:alert] %>
+        <div class="flash alert"><%= flash[:alert] %></div>
+      <% end %>
+      <% if flash[:warning] %>
+        <div class="flash warning"><%= flash[:warning] %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+  </div>
+</body>
+</html>

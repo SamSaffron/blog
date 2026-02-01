@@ -1,0 +1,101 @@
+<% content_for :title do %>
+  Leaderboard
+<% end %>
+
+<div class="leaderboard-container">
+  <h1>Leaderboard</h1>
+
+  <div class="leaderboard-section">
+    <h2>Top Raters</h2>
+    <% if @top_raters.any? %>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>User</th>
+            <th>Ratings</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_raters.each_with_index do |user, index| %>
+            <tr class="<%= 'current-user' if user.id == current_user&.id %>">
+              <td class="rank"><%= index + 1 %></td>
+              <td class="username"><%= user.username %></td>
+              <td class="count"><%= user.rating_count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-message">No ratings yet. Be the first!</p>
+    <% end %>
+  </div>
+
+  <div class="leaderboard-section">
+    <h2>Hottest Patches</h2>
+    <% if @hottest_patches.any? %>
+      <div class="patch-list">
+        <% @hottest_patches.each_with_index do |patch, index| %>
+          <a href="/hot-or-not/<%= patch.id %>" class="patch-list-item">
+            <span class="patch-rank"><%= index + 1 %></span>
+            <span class="patch-info">
+              <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
+              <span class="patch-meta-line">
+                <code><%= patch.commit_hash[0..7] %></code>
+                <% if patch.issue_type.present? %>
+                  <span class="badge badge-<%= patch.issue_type %>"><%= patch.issue_type %></span>
+                <% end %>
+              </span>
+            </span>
+            <span class="patch-score hot"><%= patch.hot_ratio %>%</span>
+          </a>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-message">No patches rated yet.</p>
+    <% end %>
+  </div>
+
+  <div class="leaderboard-section">
+    <h2>Most Controversial</h2>
+    <p class="section-description">Patches with the most divided opinions (closest to 50/50)</p>
+    <% if @most_controversial.any? %>
+      <div class="patch-list">
+        <% @most_controversial.each_with_index do |patch, index| %>
+          <a href="/hot-or-not/<%= patch.id %>" class="patch-list-item">
+            <span class="patch-rank"><%= index + 1 %></span>
+            <span class="patch-info">
+              <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
+              <span class="patch-meta-line">
+                <code><%= patch.commit_hash[0..7] %></code>
+                <span class="split-votes"><%= patch.hot_count %> HOT / <%= patch.not_count %> NOT</span>
+              </span>
+            </span>
+            <span class="patch-score split"><%= patch.hot_ratio %>%</span>
+          </a>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="empty-message">Need more votes for controversial rankings.</p>
+    <% end %>
+  </div>
+
+  <% if @user_stats %>
+    <div class="your-stats">
+      <h2>Your Progress</h2>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <span class="stat-value"><%= @user_stats[:total_rated] %></span>
+          <span class="stat-label">Rated</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value"><%= @user_stats[:remaining] %></span>
+          <span class="stat-label">Remaining</span>
+        </div>
+      </div>
+      <% if @user_stats[:remaining] > 0 %>
+        <a href="/hot-or-not" class="btn-primary">Keep Rating!</a>
+      <% end %>
+    </div>
+  <% end %>
+</div>

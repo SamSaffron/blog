@@ -121,9 +121,21 @@ after_initialize do
   require_relative("app/controllers/blog/topic_share_tokens_controller.rb")
   require_relative("lib/topic_serializer_extension.rb")
 
+  # Load Hot or Not models, controllers, and helpers
+  require_relative("app/models/patch.rb")
+  require_relative("app/models/patch_rating.rb")
+  require_relative("app/controllers/hot_or_not_controller.rb")
+  require_relative("app/controllers/hot_or_not/admin/patches_controller.rb")
+  require_relative("app/helpers/hot_or_not_helper.rb")
+
   # Add association to Topic model
   reloadable_patch do |plugin|
     Topic.class_eval { has_many :topic_share_tokens, dependent: :destroy }
+  end
+
+  # Add patch_ratings association to User model
+  reloadable_patch do |plugin|
+    User.class_eval { has_many :patch_ratings, dependent: :destroy }
   end
 
   # Extend TopicViewSerializer
@@ -263,6 +275,25 @@ after_initialize do
       resources :topic_share_tokens,
                 only: %i[index create destroy],
                 controller: "blog/topic_share_tokens"
+    end
+
+    # Hot or Not routes (on main Discourse site)
+    get "hot-or-not" => "hot_or_not#index"
+    get "hot-or-not/leaderboard" => "hot_or_not#leaderboard"
+    get "hot-or-not/stats" => "hot_or_not#stats"
+    get "hot-or-not/:id" => "hot_or_not#show"
+    post "hot-or-not/:id/rate" => "hot_or_not#rate"
+    get "hot-or-not/:id/download" => "hot_or_not#download"
+
+    scope path: "hot-or-not/admin", module: "hot_or_not/admin", as: "hot_or_not_admin" do
+      resources :patches do
+        collection do
+          get :import
+          post :perform_import
+          post :recount_all
+        end
+        member { post :toggle_active }
+      end
     end
   end
 end

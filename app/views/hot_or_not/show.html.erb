@@ -1,0 +1,95 @@
+<% content_for :title do %>
+  Rate: <%= @patch.title.truncate(50) %>
+<% end %>
+
+<div class="patch-container">
+  <div class="patch-nav-top">
+    <% if @prev_patch %>
+      <a href="/hot-or-not/<%= @prev_patch.id %>" class="nav-btn nav-prev">&larr; Prev</a>
+    <% else %>
+      <span class="nav-btn nav-prev disabled">&larr; Prev</span>
+    <% end %>
+
+    <a href="/hot-or-not" class="nav-btn nav-random">Random Unrated</a>
+
+    <% if @next_patch %>
+      <a href="/hot-or-not/<%= @next_patch.id %>" class="nav-btn nav-next">Next &rarr;</a>
+    <% else %>
+      <span class="nav-btn nav-next disabled">Next &rarr;</span>
+    <% end %>
+  </div>
+
+  <div class="patch-header">
+    <div class="patch-meta">
+      <a href="<%= @patch.github_commit_url %>" target="_blank" rel="noopener" class="commit-link">
+        <code><%= @patch.commit_hash %></code>
+      </a>
+      <% if @patch.issue_type.present? %>
+        <span class="issue-type issue-type-<%= @patch.issue_type %>"><%= @patch.issue_type %></span>
+      <% end %>
+      <% if @patch.audit_date.present? %>
+        <span class="audit-date">Audited: <%= @patch.audit_date.strftime("%Y-%m-%d") %></span>
+      <% end %>
+    </div>
+    <h1 class="patch-title"><%= @patch.title %></h1>
+  </div>
+
+  <% if @patch.summary.present? %>
+    <div class="patch-summary">
+      <h3>Summary</h3>
+      <p><%= @patch.summary %></p>
+    </div>
+  <% end %>
+
+  <div class="patch-diff">
+    <div class="diff-header-row">
+      <h3>Diff</h3>
+      <a href="/hot-or-not/<%= @patch.id %>/download" class="download-patch">Download .patch</a>
+    </div>
+    <pre class="diff-view"><code><%= highlight_diff(@patch.diff_content) %></code></pre>
+  </div>
+
+  <% if @patch.markdown_content.present? %>
+    <details class="full-analysis">
+      <summary>View Full Analysis</summary>
+      <div class="analysis-content">
+        <%= PrettyText.cook(@patch.markdown_content).html_safe %>
+      </div>
+    </details>
+  <% end %>
+
+  <div class="rating-section">
+    <% if @user_rating %>
+      <div class="already-rated">
+        <p>You rated this patch: <strong class="<%= @user_rating.is_hot ? 'vote-hot' : 'vote-not' %>"><%= @user_rating.is_hot ? "HOT" : "NOT" %></strong></p>
+        <p class="rating-stats">
+          <span class="hot-count"><%= @patch.hot_count %> HOT</span>
+          <span class="not-count"><%= @patch.not_count %> NOT</span>
+          <span class="hot-ratio">(<%= @patch.hot_ratio %>% approval)</span>
+        </p>
+        <p class="change-vote-label">Change your vote:</p>
+      </div>
+    <% else %>
+      <h3>What do you think?</h3>
+    <% end %>
+
+    <div class="rating-buttons">
+      <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+        <%= hidden_field_tag :is_hot, "true" %>
+        <button type="submit" class="rate-btn rate-hot <%= 'selected' if @user_rating&.is_hot %>">HOT</button>
+      <% end %>
+      <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+        <%= hidden_field_tag :is_hot, "false" %>
+        <button type="submit" class="rate-btn rate-not <%= 'selected' if @user_rating && !@user_rating.is_hot %>">NOT</button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="patch-progress">
+    <p>
+      <strong><%= @user_stats[:total_rated] %></strong> rated
+      &bull;
+      <strong><%= @user_stats[:remaining] %></strong> remaining
+    </p>
+  </div>
+</div>

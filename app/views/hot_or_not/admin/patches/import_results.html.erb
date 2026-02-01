@@ -1,0 +1,94 @@
+<% content_for :title do %>
+  Import Results
+<% end %>
+
+<div class="admin-container">
+  <h1>Import Results</h1>
+
+  <div class="import-summary">
+    <div class="summary-grid">
+      <div class="summary-item">
+        <span class="summary-value"><%= @result[:total_files] %></span>
+        <span class="summary-label">Files Received</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value"><%= @result[:md_files] %></span>
+        <span class="summary-label">.md Files</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-value"><%= @result[:patch_files] %></span>
+        <span class="summary-label">.patch Files</span>
+      </div>
+    </div>
+
+    <div class="summary-grid results">
+      <div class="summary-item success">
+        <span class="summary-value"><%= @result[:created] %></span>
+        <span class="summary-label">Created</span>
+      </div>
+      <div class="summary-item info">
+        <span class="summary-value"><%= @result[:updated] %></span>
+        <span class="summary-label">Updated</span>
+      </div>
+      <div class="summary-item warning">
+        <span class="summary-value"><%= @result[:skipped].count %></span>
+        <span class="summary-label">Skipped</span>
+      </div>
+      <div class="summary-item danger">
+        <span class="summary-value"><%= @result[:errors].count %></span>
+        <span class="summary-label">Errors</span>
+      </div>
+    </div>
+  </div>
+
+  <% if @result[:skipped].any? %>
+    <div class="import-section warning-section">
+      <h3>Skipped (<%= @result[:skipped].count %>)</h3>
+      <p class="section-description">These files were missing their pair and could not be imported.</p>
+      <table class="import-table">
+        <thead>
+          <tr>
+            <th>Commit Hash</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @result[:skipped].each do |skip| %>
+            <tr>
+              <td><code><%= skip[:commit_hash] %></code></td>
+              <td><%= skip[:reason] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <% if @result[:errors].any? %>
+    <div class="import-section error-section">
+      <h3>Errors (<%= @result[:errors].count %>)</h3>
+      <p class="section-description">These patches failed to import due to errors.</p>
+      <table class="import-table">
+        <thead>
+          <tr>
+            <th>Commit Hash</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @result[:errors].each do |err| %>
+            <tr>
+              <td><code><%= err[:commit_hash] %></code></td>
+              <td class="error-message"><%= err[:error] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="form-actions">
+    <a href="/hot-or-not/admin/patches" class="btn-primary">View All Patches</a>
+    <a href="/hot-or-not/admin/patches/import" class="btn-secondary">Import More</a>
+  </div>
+</div>

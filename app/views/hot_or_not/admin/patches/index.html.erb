@@ -1,0 +1,94 @@
+<% content_for :title do %>
+  Admin: Patches
+<% end %>
+
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Patch Management</h1>
+    <div class="admin-actions">
+      <%= form_tag("/hot-or-not/admin/patches/recount_all", method: :post, style: "display:inline") do %>
+        <button type="submit" class="btn-secondary">Recount All</button>
+      <% end %>
+      <a href="/hot-or-not/admin/patches/import" class="btn-secondary">Bulk Import</a>
+      <a href="/hot-or-not/admin/patches/new" class="btn-primary">Add Patch</a>
+    </div>
+  </div>
+
+  <div class="admin-stats">
+    <div class="stat-item">
+      <span class="stat-value"><%= @total_patches %></span>
+      <span class="stat-label">Total Patches</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value"><%= @active_patches %></span>
+      <span class="stat-label">Active</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value"><%= @total_ratings %></span>
+      <span class="stat-label">Total Ratings</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value"><%= @total_ratings > 0 ? ((@total_hot.to_f / @total_ratings) * 100).round(1) : 0 %>%</span>
+      <span class="stat-label">Overall HOT Rate</span>
+    </div>
+  </div>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Commit</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Hot</th>
+        <th>Not</th>
+        <th>Ratio</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @patches.each do |patch| %>
+        <tr class="<%= 'inactive' unless patch.active %>">
+          <td class="commit-hash"><code><%= patch.commit_hash.truncate(8) %></code></td>
+          <td class="title"><a href="/hot-or-not/<%= patch.id %>"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(50) %></a></td>
+          <td class="issue-type">
+            <% if patch.issue_type.present? %>
+              <span class="badge badge-<%= patch.issue_type %>"><%= patch.issue_type %></span>
+            <% end %>
+          </td>
+          <td class="hot-count"><%= patch.hot_count %></td>
+          <td class="not-count"><%= patch.not_count %></td>
+          <td class="ratio"><%= patch.hot_ratio %>%</td>
+          <td class="status">
+            <span class="status-badge <%= patch.active ? 'active' : 'inactive' %>">
+              <%= patch.active ? 'Active' : 'Inactive' %>
+            </span>
+          </td>
+          <td class="actions">
+            <a href="/hot-or-not/admin/patches/<%= patch.id %>/edit" class="action-link">Edit</a>
+            <%= form_tag("/hot-or-not/admin/patches/#{patch.id}/toggle_active", method: :post, style: "display:inline") do %>
+              <button type="submit" class="action-link btn-link">
+                <%= patch.active ? 'Deactivate' : 'Activate' %>
+              </button>
+            <% end %>
+            <%= form_tag("/hot-or-not/admin/patches/#{patch.id}", method: :delete, style: "display:inline", data: { confirm: "Are you sure?" }) do %>
+              <button type="submit" class="action-link danger btn-link">Delete</button>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @total_pages > 1 %>
+    <div class="pagination">
+      <% if @page > 1 %>
+        <a href="/hot-or-not/admin/patches?page=<%= @page - 1 %>" class="page-link">&larr; Previous</a>
+      <% end %>
+      <span class="page-info">Page <%= @page %> of <%= @total_pages %></span>
+      <% if @page < @total_pages %>
+        <a href="/hot-or-not/admin/patches?page=<%= @page + 1 %>" class="page-link">Next &rarr;</a>
+      <% end %>
+    </div>
+  <% end %>
+</div>

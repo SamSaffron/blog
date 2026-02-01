@@ -1,0 +1,77 @@
+<% content_for :title do %>
+  Admin: Edit Patch
+<% end %>
+
+<div class="admin-container">
+  <h1>Edit Patch</h1>
+
+  <%= form_for @patch, url: "/hot-or-not/admin/patches/#{@patch.id}", method: :patch, class: "patch-form" do |f| %>
+    <% if @patch.errors.any? %>
+      <div class="form-errors">
+        <h4><%= pluralize(@patch.errors.count, "error") %> prevented this patch from being saved:</h4>
+        <ul>
+          <% @patch.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= f.label :commit_hash, "Commit Hash" %>
+      <%= f.text_field :commit_hash, class: "form-input", required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :title, "Title" %>
+      <%= f.text_field :title, class: "form-input", required: true %>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <%= f.label :issue_type, "Issue Type" %>
+        <%= f.select :issue_type, [["Bug", "bug"], ["Security", "security"], ["Enhancement", "enhancement"], ["Feature", "feature"]], { include_blank: "Select type..." }, class: "form-input" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :repository, "Repository" %>
+        <%= f.text_field :repository, class: "form-input" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :audit_date, "Audit Date" %>
+        <%= f.date_field :audit_date, class: "form-input" %>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :summary, "Summary" %>
+      <%= f.text_area :summary, class: "form-input", rows: 3 %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :markdown_content, "Full Markdown Content" %>
+      <%= f.text_area :markdown_content, class: "form-input code", rows: 10 %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :diff_content, "Diff/Patch Content" %>
+      <%= f.text_area :diff_content, class: "form-input code", rows: 15 %>
+    </div>
+
+    <div class="form-group checkbox">
+      <%= f.check_box :active %>
+      <%= f.label :active, "Active (visible to users)" %>
+    </div>
+
+    <div class="patch-stats">
+      <h3>Current Stats</h3>
+      <p>HOT: <%= @patch.hot_count %> | NOT: <%= @patch.not_count %> | Approval: <%= @patch.hot_ratio %>%</p>
+    </div>
+
+    <div class="form-actions">
+      <%= f.submit "Update Patch", class: "btn-primary" %>
+      <a href="/hot-or-not/admin/patches" class="btn-secondary">Cancel</a>
+    </div>
+  <% end %>
+</div>

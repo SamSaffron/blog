@@ -1,0 +1,30 @@
+<% content_for :title do %>
+  Admin: Import Patches
+<% end %>
+
+<div class="admin-container">
+  <h1>Bulk Import Patches</h1>
+
+  <div class="import-info">
+    <h3>How it works</h3>
+    <ul>
+      <li>Select <code>.md</code> and <code>.patch</code> file pairs from your local machine</li>
+      <li>Files should be named with the commit hash (e.g., <code>abc123.md</code> and <code>abc123.patch</code>)</li>
+      <li>Extracts title, summary, audit date, repository, and issue type from the markdown</li>
+      <li>Updates existing patches if they already exist (matched by commit hash)</li>
+    </ul>
+  </div>
+
+  <%= form_tag("/hot-or-not/admin/patches/perform_import", method: :post, multipart: true, class: "import-form") do %>
+    <div class="form-group">
+      <label for="files">Select Files</label>
+      <input type="file" name="files[]" id="files" multiple accept=".md,.patch" class="form-input file-input">
+      <p class="form-help">Select all .md and .patch files from your local directory (Cmd/Ctrl+A to select all)</p>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Import Patches</button>
+      <a href="/hot-or-not/admin/patches" class="btn-secondary">Cancel</a>
+    </div>
+  <% end %>
+</div>
