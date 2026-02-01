@@ -6,6 +6,7 @@ module HotOrNot
       requires_login
       before_action :ensure_admin
       skip_before_action :check_xhr
+      helper HotOrNotHelper
 
       layout "hot_or_not"
 
