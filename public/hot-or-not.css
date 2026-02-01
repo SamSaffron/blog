@@ -230,6 +230,20 @@
   color: var(--color-text-tertiary);
 }
 
+.patch-meta .committer {
+  color: var(--color-text-tertiary);
+}
+
+.patch-meta .committer-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.patch-meta .committer-link:hover {
+  text-decoration: underline;
+}
+
 .patch-title {
   font-size: var(--text-3xl);
   font-weight: 700;
@@ -908,6 +922,25 @@
   color: var(--color-text-tertiary);
 }
 
+.patch-list-item .committer-badge {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  text-decoration: none;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.patch-list-item .committer-badge:hover {
+  background: rgba(59, 130, 246, 0.2);
+  text-decoration: none;
+}
+
+.patch-list-item .patch-date {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
 .patch-list-item .patch-score {
   flex-shrink: 0;
   font-weight: 700;
@@ -937,6 +970,62 @@
 .your-stats h2 {
   margin-top: 0;
   margin-bottom: var(--space-4);
+}
+
+/* ============================================================================
+   Committer Page
+   ============================================================================ */
+
+.committer-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.committer-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.committer-header h1 {
+  margin: 0 0 var(--space-6) 0;
+}
+
+.committer-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-5);
+}
+
+.committer-stats-grid .stat-item {
+  text-align: center;
+}
+
+.committer-stats-grid .stat-value.hot {
+  color: #dc2626;
+}
+
+.committer-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+.patch-score.unrated {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+@media (max-width: 600px) {
+  .committer-stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ============================================================================
@@ -1349,6 +1438,16 @@
 
 .admin-table .commit-hash code {
   font-size: var(--text-xs);
+}
+
+.admin-table .committer-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: var(--text-sm);
+}
+
+.admin-table .committer-link:hover {
+  text-decoration: underline;
 }
 
 .admin-table .badge {

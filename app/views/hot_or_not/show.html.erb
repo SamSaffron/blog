@@ -30,6 +30,9 @@
       <% if @patch.audit_date.present? %>
         <span class="audit-date">Audited: <%= @patch.audit_date.strftime("%Y-%m-%d") %></span>
       <% end %>
+      <% if has_committer?(@patch) %>
+        <span class="committer">by <%= committer_link(@patch) %></span>
+      <% end %>
     </div>
     <h1 class="patch-title"><%= @patch.title %></h1>
   </div>

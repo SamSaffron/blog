@@ -2,6 +2,7 @@
 
 class Patch < ActiveRecord::Base
   has_many :patch_ratings, dependent: :destroy
+  belongs_to :committer, class_name: "User", foreign_key: "committer_user_id", optional: true
 
   before_validation :normalize_commit_hash
 
@@ -32,6 +33,8 @@ class Patch < ActiveRecord::Base
         end
   scope :most_controversial,
         -> { order(Arel.sql("ABS(hot_count - not_count) ASC, (hot_count + not_count) DESC")) }
+  scope :authored_by, ->(user) { user ? where(committer_user_id: user.id) : none }
+  scope :by_committer, ->(username) { where(committer_github_username: username) }
 
   def hot_ratio
     total = hot_count + not_count
@@ -52,6 +55,30 @@ class Patch < ActiveRecord::Base
     repo_name = "discourse" if repo_name == "discourse"
 
     "discourse/#{repo_name}"
+  end
+
+  def match_committer_to_user!
+    return if committer_user_id.present?
+
+    # Try email match first
+    if committer_email.present?
+      user = User.find_by_email(committer_email)
+      if user
+        update(committer_user_id: user.id)
+        return
+      end
+    end
+
+    # Try GitHub username match via user_associated_accounts
+    if committer_github_username.present?
+      account =
+        UserAssociatedAccount
+          .where(provider_name: "github")
+          .where("info->>'nickname' = ?", committer_github_username)
+          .first
+
+      update(committer_user_id: account.user_id) if account&.user_id
+    end
   end
 
   def rated_by?(user)

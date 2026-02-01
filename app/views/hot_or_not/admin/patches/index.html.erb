@@ -9,6 +9,9 @@
       <%= form_tag("/hot-or-not/admin/patches/recount_all", method: :post, style: "display:inline") do %>
         <button type="submit" class="btn-secondary">Recount All</button>
       <% end %>
+      <%= form_tag("/hot-or-not/admin/patches/backfill_committers", method: :post, style: "display:inline") do %>
+        <button type="submit" class="btn-secondary">Backfill Committers</button>
+      <% end %>
       <a href="/hot-or-not/admin/patches/import" class="btn-secondary">Bulk Import</a>
       <a href="/hot-or-not/admin/patches/new" class="btn-primary">Add Patch</a>
     </div>
@@ -39,6 +42,7 @@
         <th>Commit</th>
         <th>Title</th>
         <th>Type</th>
+        <th>Committer</th>
         <th>Hot</th>
         <th>Not</th>
         <th>Ratio</th>
@@ -55,6 +59,9 @@
             <% if patch.issue_type.present? %>
               <span class="badge badge-<%= patch.issue_type %>"><%= patch.issue_type %></span>
             <% end %>
+          </td>
+          <td class="committer">
+            <%= committer_link(patch, truncate_to: 15) %>
           </td>
           <td class="hot-count"><%= patch.hot_count %></td>
           <td class="not-count"><%= patch.not_count %></td>

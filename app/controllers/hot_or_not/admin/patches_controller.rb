@@ -14,7 +14,10 @@ module HotOrNot
         @per_page = 50
         @total_patches = Patch.count
         @active_patches = Patch.active.count
-        @patches = Patch.order(created_at: :desc).offset((@page - 1) * @per_page).limit(@per_page)
+        @patches =
+          Patch.includes(:committer).order(created_at: :desc).offset((@page - 1) * @per_page).limit(
+            @per_page,
+          )
         @total_pages = (@total_patches.to_f / @per_page).ceil
         @total_ratings = PatchRating.count
         @total_hot = PatchRating.where(is_hot: true).count
@@ -70,6 +73,12 @@ module HotOrNot
         redirect_to "/hot-or-not/admin/patches", notice: "Recounted ratings for #{count} patches"
       end
 
+      def backfill_committers
+        Jobs.enqueue(:backfill_patch_committers)
+        redirect_to "/hot-or-not/admin/patches",
+                    notice: "Backfill job enqueued. Committer data will be populated in the background."
+      end
+
       def import
       end
 
@@ -80,6 +89,12 @@ module HotOrNot
         end
 
         @result = import_from_uploaded_files(params[:files])
+
+        # Trigger committer backfill if any patches were imported
+        if @result[:created] > 0 || @result[:updated] > 0
+          Jobs.enqueue(:backfill_patch_committers)
+        end
+
         render :import_results
       end
 

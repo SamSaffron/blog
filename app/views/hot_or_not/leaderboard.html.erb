@@ -45,6 +45,7 @@
                 <% if patch.issue_type.present? %>
                   <span class="badge badge-<%= patch.issue_type %>"><%= patch.issue_type %></span>
                 <% end %>
+                <%= committer_link(patch, css_class: "committer-badge") %>
               </span>
             </span>
             <span class="patch-score hot"><%= patch.hot_ratio %>%</span>
@@ -69,6 +70,7 @@
               <span class="patch-meta-line">
                 <code><%= patch.commit_hash[0..7] %></code>
                 <span class="split-votes"><%= patch.hot_count %> HOT / <%= patch.not_count %> NOT</span>
+                <%= committer_link(patch, css_class: "committer-badge") %>
               </span>
             </span>
             <span class="patch-score split"><%= patch.hot_ratio %>%</span>
@@ -77,6 +79,39 @@
       </div>
     <% else %>
       <p class="empty-message">Need more votes for controversial rankings.</p>
+    <% end %>
+  </div>
+
+  <div class="leaderboard-section">
+    <h2>Top Committers</h2>
+    <p class="section-description">Committers whose patches are rated hottest on average</p>
+    <% if @top_committers.any? %>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Committer</th>
+            <th>Patches</th>
+            <th>Votes</th>
+            <th>Avg Approval</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_committers.each_with_index do |row, index| %>
+            <tr>
+              <td class="rank"><%= index + 1 %></td>
+              <td class="username">
+                <a href="/hot-or-not/by/<%= ERB::Util.url_encode(row.committer_identifier) %>"><%= row.committer_identifier %></a>
+              </td>
+              <td class="count"><%= row.patch_count %></td>
+              <td class="count"><%= row.total_votes %></td>
+              <td class="approval hot"><%= (row.avg_hot_ratio * 100).round(1) %>%</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-message">No committer data available yet.</p>
     <% end %>
   </div>
 

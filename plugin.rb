@@ -213,6 +213,7 @@ after_initialize do
 
   require_relative("app/jobs/scheduled/blog_update_twitter.rb")
   require_relative("app/jobs/regular/corrupt_a_wish.rb")
+  require_relative("app/jobs/regular/backfill_patch_committers.rb")
   require_relative("lib/gpt_dispatcher.rb")
 
   require_dependency "plugin/filter"
@@ -281,6 +282,7 @@ after_initialize do
     get "hot-or-not" => "hot_or_not#index"
     get "hot-or-not/leaderboard" => "hot_or_not#leaderboard"
     get "hot-or-not/stats" => "hot_or_not#stats"
+    get "hot-or-not/by/:committer" => "hot_or_not#by_committer"
     get "hot-or-not/:id" => "hot_or_not#show"
     post "hot-or-not/:id/rate" => "hot_or_not#rate"
     get "hot-or-not/:id/download" => "hot_or_not#download"
@@ -291,6 +293,7 @@ after_initialize do
           get :import
           post :perform_import
           post :recount_all
+          post :backfill_committers
         end
         member { post :toggle_active }
       end
