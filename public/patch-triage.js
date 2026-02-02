@@ -1,4 +1,4 @@
-// Hot or Not - Resolve Modal and Copy Curl Command
+// Patch Triage - Resolve Modal and Copy Curl Command
 
 (function () {
   function openResolveModal() {
@@ -60,7 +60,7 @@
 
     try {
       const response = await fetch(
-        "/hot-or-not/" + patchId + "/generate-download-token",
+        "/patch-triage/" + patchId + "/generate-download-token",
         {
           method: "POST",
           headers: {

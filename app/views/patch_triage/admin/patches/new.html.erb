@@ -1,11 +1,11 @@
 <% content_for :title do %>
-  Admin: Edit Patch
+  Admin: New Patch
 <% end %>
 
 <div class="admin-container">
-  <h1>Edit Patch</h1>
+  <h1>Add New Patch</h1>
 
-  <%= form_for @patch, url: "/hot-or-not/admin/patches/#{@patch.id}", method: :patch, class: "patch-form" do |f| %>
+  <%= form_for @patch, url: "/patch-triage/admin/patches", method: :post, class: "patch-form" do |f| %>
     <% if @patch.errors.any? %>
       <div class="form-errors">
         <h4><%= pluralize(@patch.errors.count, "error") %> prevented this patch from being saved:</h4>
@@ -64,14 +64,9 @@
       <%= f.label :active, "Active (visible to users)" %>
     </div>
 
-    <div class="patch-stats">
-      <h3>Current Stats</h3>
-      <p>HOT: <%= @patch.hot_count %> | NOT: <%= @patch.not_count %> | Approval: <%= @patch.hot_ratio %>%</p>
-    </div>
-
     <div class="form-actions">
-      <%= f.submit "Update Patch", class: "btn-primary" %>
-      <a href="/hot-or-not/admin/patches" class="btn-secondary">Cancel</a>
+      <%= f.submit "Create Patch", class: "btn-primary" %>
+      <a href="/patch-triage/admin/patches" class="btn-secondary">Cancel</a>
     </div>
   <% end %>
 </div>

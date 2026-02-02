@@ -1,14 +1,14 @@
 /* ============================================================================
-   HOT OR NOT - Patch Rating UI
+   PATCH TRIAGE - Patch Rating UI
    ============================================================================ */
 
 /* Layout */
-.hot-or-not-page {
+.patch-triage-page {
   background: #fff;
   min-height: 100vh;
 }
 
-.hot-or-not-page #wrapper {
+.patch-triage-page #wrapper {
   max-width: 900px;
   margin: 0 auto;
   padding: 0 var(--space-4);
@@ -590,29 +590,29 @@
   cursor: not-allowed;
 }
 
-.rate-hot {
+.rate-useful {
   background: #ef4444;
   color: white;
 }
 
-.rate-hot:hover:not(:disabled) {
+.rate-useful:hover:not(:disabled) {
   opacity: 0.9;
 }
 
-.rate-hot.selected {
+.rate-useful.selected {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3);
 }
 
-.rate-not {
+.rate-not-useful {
   background: #3b82f6;
   color: white;
 }
 
-.rate-not:hover:not(:disabled) {
+.rate-not-useful:hover:not(:disabled) {
   opacity: 0.9;
 }
 
-.rate-not.selected {
+.rate-not-useful.selected {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
@@ -627,11 +627,11 @@
   font-size: var(--text-sm);
 }
 
-.already-rated .vote-hot {
+.already-rated .vote-useful {
   color: #ef4444;
 }
 
-.already-rated .vote-not {
+.already-rated .vote-not-useful {
   color: #3b82f6;
 }
 
@@ -649,15 +649,15 @@
   font-size: var(--text-sm);
 }
 
-.rating-stats .hot-count {
+.rating-stats .useful-count {
   color: #ef4444;
 }
 
-.rating-stats .not-count {
+.rating-stats .not-useful-count {
   color: #3b82f6;
 }
 
-.rating-stats .hot-ratio {
+.rating-stats .useful-ratio {
   color: var(--color-text-tertiary);
 }
 
@@ -763,11 +763,11 @@
   color: var(--color-text-primary);
 }
 
-.stat-value.hot {
+.stat-value.useful {
   color: #e74c3c;
 }
 
-.stat-value.not {
+.stat-value.not-useful {
   color: #3498db;
 }
 
@@ -880,7 +880,7 @@
   width: 50px;
 }
 
-.leaderboard-table .approval.hot {
+.leaderboard-table .approval.useful {
   color: #e74c3c;
   font-weight: 600;
 }
@@ -1025,7 +1025,7 @@
   width: 8ch;
 }
 
-.patch-list-item .patch-score.hot {
+.patch-list-item .patch-score.useful {
   background: #fee2e2;
   color: #dc2626;
 }
@@ -1080,7 +1080,7 @@
   text-align: center;
 }
 
-.committer-stats-grid .stat-value.hot {
+.committer-stats-grid .stat-value.useful {
   color: #dc2626;
 }
 
@@ -1220,11 +1220,11 @@
   letter-spacing: 0.03em;
 }
 
-.stats-card.hot-card .card-value {
+.stats-card.useful-card .card-value {
   color: #dc2626;
 }
 
-.stats-card.not-card .card-value {
+.stats-card.not-useful-card .card-value {
   color: #2563eb;
 }
 
@@ -1256,7 +1256,7 @@
   font-size: var(--text-sm);
 }
 
-.pattern-hot {
+.pattern-useful {
   background: #ef4444;
   color: white;
   display: flex;
@@ -1265,7 +1265,7 @@
   transition: width 0.5s ease;
 }
 
-.pattern-not {
+.pattern-not-useful {
   background: #3b82f6;
   color: white;
   display: flex;
@@ -1282,11 +1282,11 @@
   font-weight: 600;
 }
 
-.legend-hot {
+.legend-useful {
   color: #dc2626;
 }
 
-.legend-not {
+.legend-not-useful {
   color: #2563eb;
 }
 
@@ -1345,12 +1345,12 @@
   text-transform: uppercase;
 }
 
-.activity-vote.hot {
+.activity-vote.useful {
   background: #fee2e2;
   color: #dc2626;
 }
 
-.activity-vote.not {
+.activity-vote.not-useful {
   background: #dbeafe;
   color: #2563eb;
 }
@@ -2258,7 +2258,7 @@
     flex-direction: column;
   }
 
-  .hot-or-not-page #headerLogo ul {
+  .patch-triage-page #headerLogo ul {
     flex-wrap: wrap;
     gap: var(--space-2);
   }

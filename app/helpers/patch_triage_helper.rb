@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module HotOrNotHelper
+module PatchTriageHelper
   # Builds query params for filter links, merging with current params
   def filter_params(overrides = {})
     current = params.permit(:status, :claimed, :claimed_by_me, :sort, :page).to_h.symbolize_keys
@@ -38,7 +38,7 @@ module HotOrNotHelper
     display = display.truncate(truncate_to) if truncate_to
     slug = committer_slug(patch)
 
-    link_to(display, "/hot-or-not/by/#{slug}", class: css_class)
+    link_to(display, "/patch-triage/by/#{slug}", class: css_class)
   end
 
   # Highlights diff content with CSS classes for syntax coloring.

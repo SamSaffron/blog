@@ -1,0 +1,92 @@
+<% content_for :title do %>
+  Patch List
+<% end %>
+
+<div class="list-container">
+  <div class="list-header">
+    <h1>Patch List</h1>
+  </div>
+
+  <div class="list-filters">
+    <div class="filter-group">
+      <label>Status:</label>
+      <div class="filter-buttons">
+        <a href="/patch-triage/list?<%= filter_params(status: nil) %>" class="filter-btn <%= 'active' if @current_filter.nil? %>">All</a>
+        <a href="/patch-triage/list?<%= filter_params(status: 'unresolved') %>" class="filter-btn <%= 'active' if @current_filter == 'unresolved' %>">Unresolved</a>
+        <a href="/patch-triage/list?<%= filter_params(status: 'resolved') %>" class="filter-btn <%= 'active' if @current_filter == 'resolved' %>">Resolved</a>
+        <a href="/patch-triage/list?<%= filter_params(status: 'fixed') %>" class="filter-btn filter-fixed <%= 'active' if @current_filter == 'fixed' %>">Fixed</a>
+        <a href="/patch-triage/list?<%= filter_params(status: 'invalid') %>" class="filter-btn filter-invalid <%= 'active' if @current_filter == 'invalid' %>">Invalid</a>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Claims:</label>
+      <div class="filter-buttons">
+        <a href="/patch-triage/list?<%= filter_params(claimed: nil, claimed_by_me: nil) %>" class="filter-btn <%= 'active' if params[:claimed].nil? && params[:claimed_by_me].nil? %>">All</a>
+        <a href="/patch-triage/list?<%= filter_params(claimed: '1', claimed_by_me: nil) %>" class="filter-btn <%= 'active' if params[:claimed] == '1' %>">Claimed</a>
+        <a href="/patch-triage/list?<%= filter_params(claimed: '0', claimed_by_me: nil) %>" class="filter-btn <%= 'active' if params[:claimed] == '0' %>">Unclaimed</a>
+        <% if @is_reviewer %>
+          <a href="/patch-triage/list?<%= filter_params(claimed_by_me: '1', claimed: nil) %>" class="filter-btn <%= 'active' if params[:claimed_by_me] == '1' %>">My Claims</a>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Sort:</label>
+      <div class="filter-buttons">
+        <a href="/patch-triage/list?<%= filter_params(sort: nil) %>" class="filter-btn <%= 'active' if @current_sort == 'default' %>">Most Voted</a>
+        <a href="/patch-triage/list?<%= filter_params(sort: 'useful') %>" class="filter-btn <%= 'active' if @current_sort == 'useful' %>">Most Useful</a>
+        <a href="/patch-triage/list?<%= filter_params(sort: 'controversial') %>" class="filter-btn <%= 'active' if @current_sort == 'controversial' %>">Controversial</a>
+        <a href="/patch-triage/list?<%= filter_params(sort: 'newest') %>" class="filter-btn <%= 'active' if @current_sort == 'newest' %>">Newest</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="list-stats">
+    Showing <%= (@page - 1) * @per_page + 1 %>-<%= [(@page * @per_page), @total_count].min %> of <%= @total_count %> patches
+  </div>
+
+  <% if @patches.any? %>
+    <div class="patch-list">
+      <% @patches.each do |patch| %>
+        <a href="/patch-triage/<%= patch.id %>" class="patch-list-item">
+          <span class="patch-info">
+            <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
+            <span class="patch-meta-line">
+              <code><%= patch.commit_hash[0..7] %></code>
+              <% if patch.issue_type.present? %>
+                <span class="badge badge-<%= patch.issue_type %>"><%= patch.issue_type %></span>
+              <% end %>
+              <% if patch.resolved? %>
+                <span class="badge badge-resolution badge-<%= patch.resolution_status %>"><%= patch.resolution_status %></span>
+              <% end %>
+              <% if patch.patch_claims.any? %>
+                <span class="badge badge-claimed">claimed</span>
+              <% end %>
+              <% if has_committer?(patch) %>
+                <span class="committer-badge"><%= committer_display_name(patch) %></span>
+              <% end %>
+            </span>
+          </span>
+          <% total_votes = patch.useful_count + patch.not_useful_count %>
+          <span class="patch-votes"><%= total_votes > 0 ? total_votes : '-' %></span>
+          <span class="patch-score <%= total_votes > 0 ? (patch.useful_ratio >= 50 ? 'useful' : 'split') : 'unrated' %>"><%= total_votes > 0 ? "#{patch.useful_ratio}%" : '-' %></span>
+        </a>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-message">No patches match the current filters.</p>
+  <% end %>
+
+  <% if @total_pages > 1 %>
+    <div class="pagination">
+      <% if @page > 1 %>
+        <a href="/patch-triage/list?<%= filter_params(page: @page - 1) %>" class="page-link">&larr; Previous</a>
+      <% end %>
+      <span class="page-info">Page <%= @page %> of <%= @total_pages %></span>
+      <% if @page < @total_pages %>
+        <a href="/patch-triage/list?<%= filter_params(page: @page + 1) %>" class="page-link">Next &rarr;</a>
+      <% end %>
+    </div>
+  <% end %>
+</div>

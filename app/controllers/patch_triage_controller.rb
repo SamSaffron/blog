@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-class HotOrNotController < ApplicationController
+class PatchTriageController < ApplicationController
   skip_before_action :check_xhr
   before_action :ensure_logged_in, except: [:token_download]
   before_action :set_current_user_github_info
-  helper HotOrNotHelper
+  helper PatchTriageHelper
 
-  layout "hot_or_not"
+  layout "patch_triage"
 
   def index
     @patch = Patch.random_unrated_for(current_user)
     if @patch
-      redirect_to "/hot-or-not/#{@patch.id}"
+      redirect_to "/patch-triage/#{@patch.id}"
     else
       @user_stats = PatchRating.user_stats(current_user)
       render :all_rated
@@ -34,23 +34,23 @@ class HotOrNotController < ApplicationController
     @patch = Patch.active.find(params[:id])
 
     if @patch.resolved?
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Cannot vote on resolved patches"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Cannot vote on resolved patches"
       return
     end
 
     @rating = PatchRating.find_or_initialize_by(patch: @patch, user: current_user)
-    @rating.is_hot = params[:is_hot] == "true"
+    @rating.is_useful = params[:is_useful] == "true"
 
     if @rating.save
-      vote_text = @rating.is_hot ? "HOT" : "NOT"
+      vote_text = @rating.is_useful ? "Useful" : "Not Useful"
       next_patch = Patch.random_unrated_for(current_user)
       if next_patch
-        redirect_to "/hot-or-not/#{next_patch.id}", notice: "Voted #{vote_text} on \"#{@patch.title.truncate(50)}\""
+        redirect_to "/patch-triage/#{next_patch.id}", notice: "Voted #{vote_text} on \"#{@patch.title.truncate(50)}\""
       else
-        redirect_to "/hot-or-not", notice: "Voted #{vote_text}! You've rated all patches!"
+        redirect_to "/patch-triage", notice: "Voted #{vote_text}! You've rated all patches!"
       end
     else
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Error saving rating"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Error saving rating"
     end
   end
 
@@ -62,12 +62,12 @@ class HotOrNotController < ApplicationController
     @patches =
       case @tab
       when "claimed"
-        Patch.active.claimed_by(current_user).by_hot_ratio
+        Patch.active.claimed_by(current_user).by_useful_ratio
       when "resolved"
         Patch.active.resolved_by(current_user).order(resolved_at: :desc)
       else # "authored"
         if @current_user_github_id
-          Patch.active.by_github_id(@current_user_github_id).by_hot_ratio
+          Patch.active.by_github_id(@current_user_github_id).by_useful_ratio
         else
           Patch.none
         end
@@ -93,14 +93,14 @@ class HotOrNotController < ApplicationController
       case @tab
       when "authored"
         if user_github_id
-          Patch.active.by_github_id(user_github_id).by_hot_ratio
+          Patch.active.by_github_id(user_github_id).by_useful_ratio
         else
           Patch.none
         end
       when "resolved"
         Patch.active.resolved_by(@user).order(resolved_at: :desc)
       else # "claimed"
-        Patch.active.claimed_by(@user).by_hot_ratio
+        Patch.active.claimed_by(@user).by_useful_ratio
       end
 
     @tab_stats = calculate_patch_stats(@patches)
@@ -134,8 +134,8 @@ class HotOrNotController < ApplicationController
 
     # Sorting
     @patches = case params[:sort]
-    when "hot"
-      @patches.by_hot_ratio
+    when "useful"
+      @patches.by_useful_ratio
     when "controversial"
       @patches.most_controversial
     when "newest"
@@ -143,7 +143,7 @@ class HotOrNotController < ApplicationController
     when "oldest"
       @patches.order("patches.created_at ASC")
     else
-      @patches.order(Arel.sql("(hot_count + not_count) DESC, patches.created_at DESC"))
+      @patches.order(Arel.sql("(useful_count + not_useful_count) DESC, patches.created_at DESC"))
     end
 
     # Pagination
@@ -164,17 +164,17 @@ class HotOrNotController < ApplicationController
     @patch = Patch.active.find(params[:id])
 
     if @patch.resolved?
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Cannot claim resolved patches"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Cannot claim resolved patches"
       return
     end
 
     if @patch.claimed_by?(current_user)
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "You have already claimed this patch"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "You have already claimed this patch"
       return
     end
 
     @patch.claim_for(current_user, notes: params[:notes])
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch claimed"
+    redirect_to "/patch-triage/#{@patch.id}", notice: "Patch claimed"
   end
 
   def unclaim
@@ -182,7 +182,7 @@ class HotOrNotController < ApplicationController
     @patch = Patch.active.find(params[:id])
 
     @patch.unclaim_for(current_user)
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch unclaimed"
+    redirect_to "/patch-triage/#{@patch.id}", notice: "Patch unclaimed"
   end
 
   def resolve
@@ -191,19 +191,19 @@ class HotOrNotController < ApplicationController
     status = params[:status]
 
     if %w[fixed invalid].exclude?(status)
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Invalid resolution status"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Invalid resolution status"
       return
     end
 
     changeset_url = params[:changeset_url]&.strip.presence
 
     if status == "fixed" && changeset_url.blank?
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Changeset URL is required when resolving as fixed"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Changeset URL is required when resolving as fixed"
       return
     end
 
     if status == "fixed" && !Patch.valid_changeset_url?(changeset_url)
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Changeset URL must be a valid HTTP or HTTPS URL"
+      redirect_to "/patch-triage/#{@patch.id}", alert: "Changeset URL must be a valid HTTP or HTTPS URL"
       return
     end
 
@@ -211,7 +211,7 @@ class HotOrNotController < ApplicationController
     changeset_url = nil unless status == "fixed"
 
     @patch.resolve!(user: current_user, status: status, notes: params[:notes], changeset_url: changeset_url)
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch marked as #{status}"
+    redirect_to "/patch-triage/#{@patch.id}", notice: "Patch marked as #{status}"
   end
 
   def unresolve
@@ -219,16 +219,16 @@ class HotOrNotController < ApplicationController
 
     @patch = Patch.find(params[:id])
     @patch.unresolve!
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch resolution cleared"
+    redirect_to "/patch-triage/#{@patch.id}", notice: "Patch resolution cleared"
   end
 
   def leaderboard
     @top_resolvers = top_resolvers_query(10)
     @top_raters = PatchRating.leaderboard(limit: 20)
-    @hottest_patches =
-      Patch.active.includes(:committer).where("hot_count + not_count > 0").by_hot_ratio.limit(10)
+    @most_useful_patches =
+      Patch.active.includes(:committer).where("useful_count + not_useful_count > 0").by_useful_ratio.limit(10)
     @most_controversial =
-      Patch.active.includes(:committer).where("hot_count + not_count >= 5").most_controversial.limit(10)
+      Patch.active.includes(:committer).where("useful_count + not_useful_count >= 5").most_controversial.limit(10)
     @top_committers = top_committers_query(10)
     @user_stats = PatchRating.user_stats(current_user)
   end
@@ -240,7 +240,7 @@ class HotOrNotController < ApplicationController
         .active
         .includes(:committer)
         .where("committer_github_username = ? OR committer_name = ?", @committer, @committer)
-        .by_hot_ratio
+        .by_useful_ratio
     @committer_stats = calculate_committer_stats(@patches)
     @user_stats = PatchRating.user_stats(current_user)
   end
@@ -261,7 +261,7 @@ class HotOrNotController < ApplicationController
     @patch = Patch.active.find(params[:id])
     token = PatchDownloadToken.generate(@patch.id)
     base_url = Discourse.base_url
-    curl_command = "curl -sL '#{base_url}/hot-or-not/p/#{token}' | git apply"
+    curl_command = "curl -sL '#{base_url}/patch-triage/p/#{token}' | git apply"
     render json: { curl_command: curl_command }
   end
 
@@ -305,7 +305,7 @@ class HotOrNotController < ApplicationController
   def top_committers_query(limit)
     Patch
       .active
-      .where("hot_count + not_count > 0")
+      .where("useful_count + not_useful_count > 0")
       .where(
         "NULLIF(committer_github_username, '') IS NOT NULL OR NULLIF(committer_name, '') IS NOT NULL",
       )
@@ -313,10 +313,10 @@ class HotOrNotController < ApplicationController
       .select(
         "COALESCE(NULLIF(committer_github_username, ''), NULLIF(committer_name, '')) as committer_identifier",
         "COUNT(*) as patch_count",
-        "AVG(CASE WHEN (hot_count + not_count) > 0 THEN hot_count::float / (hot_count + not_count) ELSE 0 END) as avg_hot_ratio",
-        "SUM(hot_count + not_count) as total_votes",
+        "AVG(CASE WHEN (useful_count + not_useful_count) > 0 THEN useful_count::float / (useful_count + not_useful_count) ELSE 0 END) as avg_useful_ratio",
+        "SUM(useful_count + not_useful_count) as total_votes",
       )
-      .order("avg_hot_ratio DESC")
+      .order("avg_useful_ratio DESC")
       .limit(limit)
   end
 
@@ -326,12 +326,12 @@ class HotOrNotController < ApplicationController
 
   def calculate_patch_stats(patches)
     total_patches = patches.count
-    rated_patches = patches.where("hot_count + not_count > 0")
-    total_votes = rated_patches.sum("hot_count + not_count")
-    total_hot = rated_patches.sum(:hot_count)
-    avg_ratio = total_votes > 0 ? (total_hot.to_f / total_votes * 100).round(1) : 0
+    rated_patches = patches.where("useful_count + not_useful_count > 0")
+    total_votes = rated_patches.sum("useful_count + not_useful_count")
+    total_useful = rated_patches.sum(:useful_count)
+    avg_ratio = total_votes > 0 ? (total_useful.to_f / total_votes * 100).round(1) : 0
 
-    { total_patches: total_patches, total_votes: total_votes, avg_hot_ratio: avg_ratio }
+    { total_patches: total_patches, total_votes: total_votes, avg_useful_ratio: avg_ratio }
   end
 
   def ensure_logged_in
@@ -340,7 +340,7 @@ class HotOrNotController < ApplicationController
   end
 
   def reviewer_group_ids
-    SiteSetting.hot_or_not_reviewers_groups_map
+    SiteSetting.patch_triage_reviewers_groups_map
   end
 
   def is_reviewer?

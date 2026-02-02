@@ -24,7 +24,7 @@
             <tr class="<%= 'current-user' if row.user_id == current_user&.id %>">
               <td class="rank"><%= index + 1 %></td>
               <td class="username">
-                <a href="/hot-or-not/users/<%= ERB::Util.url_encode(row.username) %>"><%= row.username %></a>
+                <a href="/patch-triage/users/<%= ERB::Util.url_encode(row.username) %>"><%= row.username %></a>
               </td>
               <td class="count"><%= row.resolved_count %></td>
               <td class="count resolved-fixed"><%= row.fixed_count %></td>
@@ -54,7 +54,7 @@
             <tr class="<%= 'current-user' if user.id == current_user&.id %>">
               <td class="rank"><%= index + 1 %></td>
               <td class="username">
-                <a href="/hot-or-not/users/<%= ERB::Util.url_encode(user.username) %>"><%= user.username %></a>
+                <a href="/patch-triage/users/<%= ERB::Util.url_encode(user.username) %>"><%= user.username %></a>
               </td>
               <td class="count"><%= user.rating_count %></td>
             </tr>
@@ -67,11 +67,11 @@
   </div>
 
   <div class="leaderboard-section">
-    <h2>Hottest Patches</h2>
-    <% if @hottest_patches.any? %>
+    <h2>Most Useful Patches</h2>
+    <% if @most_useful_patches.any? %>
       <div class="patch-list">
-        <% @hottest_patches.each_with_index do |patch, index| %>
-          <a href="/hot-or-not/<%= patch.id %>" class="patch-list-item">
+        <% @most_useful_patches.each_with_index do |patch, index| %>
+          <a href="/patch-triage/<%= patch.id %>" class="patch-list-item">
             <span class="patch-rank"><%= index + 1 %></span>
             <span class="patch-info">
               <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
@@ -83,7 +83,7 @@
                 <%= committer_link(patch, css_class: "committer-badge") %>
               </span>
             </span>
-            <span class="patch-score hot"><%= patch.hot_ratio %>%</span>
+            <span class="patch-score useful"><%= patch.useful_ratio %>%</span>
           </a>
         <% end %>
       </div>
@@ -98,17 +98,17 @@
     <% if @most_controversial.any? %>
       <div class="patch-list">
         <% @most_controversial.each_with_index do |patch, index| %>
-          <a href="/hot-or-not/<%= patch.id %>" class="patch-list-item">
+          <a href="/patch-triage/<%= patch.id %>" class="patch-list-item">
             <span class="patch-rank"><%= index + 1 %></span>
             <span class="patch-info">
               <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
               <span class="patch-meta-line">
                 <code><%= patch.commit_hash[0..7] %></code>
-                <span class="split-votes"><%= patch.hot_count %> HOT / <%= patch.not_count %> NOT</span>
+                <span class="split-votes"><%= patch.useful_count %> Useful / <%= patch.not_useful_count %> Not Useful</span>
                 <%= committer_link(patch, css_class: "committer-badge") %>
               </span>
             </span>
-            <span class="patch-score split"><%= patch.hot_ratio %>%</span>
+            <span class="patch-score split"><%= patch.useful_ratio %>%</span>
           </a>
         <% end %>
       </div>
@@ -119,7 +119,7 @@
 
   <div class="leaderboard-section">
     <h2>Top Committers</h2>
-    <p class="section-description">Committers whose patches are rated hottest on average</p>
+    <p class="section-description">Committers whose patches are rated most useful on average</p>
     <% if @top_committers.any? %>
       <table class="leaderboard-table">
         <thead>
@@ -136,11 +136,11 @@
             <tr>
               <td class="rank"><%= index + 1 %></td>
               <td class="username">
-                <a href="/hot-or-not/by/<%= ERB::Util.url_encode(row.committer_identifier) %>"><%= row.committer_identifier %></a>
+                <a href="/patch-triage/by/<%= ERB::Util.url_encode(row.committer_identifier) %>"><%= row.committer_identifier %></a>
               </td>
               <td class="count"><%= row.patch_count %></td>
               <td class="count"><%= row.total_votes %></td>
-              <td class="approval hot"><%= (row.avg_hot_ratio * 100).round(1) %>%</td>
+              <td class="approval useful"><%= (row.avg_useful_ratio * 100).round(1) %>%</td>
             </tr>
           <% end %>
         </tbody>
@@ -164,7 +164,7 @@
         </div>
       </div>
       <% if @user_stats[:remaining] > 0 %>
-        <a href="/hot-or-not" class="btn-primary">Keep Rating!</a>
+        <a href="/patch-triage" class="btn-primary">Keep Rating!</a>
       <% end %>
     </div>
   <% end %>

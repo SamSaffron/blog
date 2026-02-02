@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-module HotOrNot
+module PatchTriage
   module Admin
     class PatchesController < ApplicationController
       requires_login
       before_action :ensure_admin
       before_action :set_current_user_github_info
       skip_before_action :check_xhr
-      helper HotOrNotHelper
+      helper PatchTriageHelper
 
-      layout "hot_or_not"
+      layout "patch_triage"
 
       def index
         @page = (params[:page] || 1).to_i
@@ -22,7 +22,7 @@ module HotOrNot
           )
         @total_pages = (@total_patches.to_f / @per_page).ceil
         @total_ratings = PatchRating.count
-        @total_hot = PatchRating.where(is_hot: true).count
+        @total_useful = PatchRating.where(is_useful: true).count
       end
 
       def show
@@ -36,7 +36,7 @@ module HotOrNot
       def create
         @patch = Patch.new(patch_params)
         if @patch.save
-          redirect_to "/hot-or-not/admin/patches", notice: "Patch created successfully"
+          redirect_to "/patch-triage/admin/patches", notice: "Patch created successfully"
         else
           render :new
         end
@@ -49,7 +49,7 @@ module HotOrNot
       def update
         @patch = Patch.find(params[:id])
         if @patch.update(patch_params)
-          redirect_to "/hot-or-not/admin/patches", notice: "Patch updated successfully"
+          redirect_to "/patch-triage/admin/patches", notice: "Patch updated successfully"
         else
           render :edit
         end
@@ -58,34 +58,34 @@ module HotOrNot
       def destroy
         @patch = Patch.find(params[:id])
         @patch.destroy
-        redirect_to "/hot-or-not/admin/patches", notice: "Patch deleted"
+        redirect_to "/patch-triage/admin/patches", notice: "Patch deleted"
       end
 
       def toggle_active
         @patch = Patch.find(params[:id])
         if @patch.update(active: !@patch.active)
-          redirect_to "/hot-or-not/admin/patches", notice: "Patch #{@patch.active ? 'activated' : 'deactivated'}"
+          redirect_to "/patch-triage/admin/patches", notice: "Patch #{@patch.active ? 'activated' : 'deactivated'}"
         else
-          redirect_to "/hot-or-not/admin/patches", alert: "Failed to update patch: #{@patch.errors.full_messages.join(', ')}"
+          redirect_to "/patch-triage/admin/patches", alert: "Failed to update patch: #{@patch.errors.full_messages.join(', ')}"
         end
       end
 
       def recount_all
         count = Patch.recount_all_ratings!
-        redirect_to "/hot-or-not/admin/patches", notice: "Recounted ratings for #{count} patches"
+        redirect_to "/patch-triage/admin/patches", notice: "Recounted ratings for #{count} patches"
       end
 
       def backfill_committers
         Jobs.enqueue(:backfill_patch_committers)
-        redirect_to "/hot-or-not/admin/patches",
+        redirect_to "/patch-triage/admin/patches",
                     notice: "Backfill job enqueued. Committer data will be populated in the background."
       end
 
       def add_voters_to_group
         group = reviewer_group
         unless group
-          redirect_to "/hot-or-not/admin/patches",
-                      alert: "No reviewers group configured. Set hot_or_not_reviewers_group in settings."
+          redirect_to "/patch-triage/admin/patches",
+                      alert: "No reviewers group configured. Set patch_triage_reviewers_groups in settings."
           return
         end
 
@@ -100,7 +100,7 @@ module HotOrNot
           added_count += 1
         end
 
-        redirect_to "/hot-or-not/admin/patches",
+        redirect_to "/patch-triage/admin/patches",
                     notice: "Added #{added_count} voters to the #{group.name} group."
       end
 
@@ -109,7 +109,7 @@ module HotOrNot
 
       def perform_import
         if params[:files].blank?
-          redirect_to "/hot-or-not/admin/patches/import", alert: "No files provided"
+          redirect_to "/patch-triage/admin/patches/import", alert: "No files provided"
           return
         end
 
@@ -224,7 +224,7 @@ module HotOrNot
       end
 
       def reviewer_group_ids
-        SiteSetting.hot_or_not_reviewers_groups_map
+        SiteSetting.patch_triage_reviewers_groups_map
       end
 
       def reviewer_group

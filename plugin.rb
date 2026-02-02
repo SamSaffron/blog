@@ -121,14 +121,14 @@ after_initialize do
   require_relative("app/controllers/blog/topic_share_tokens_controller.rb")
   require_relative("lib/topic_serializer_extension.rb")
 
-  # Load Hot or Not models, controllers, and helpers
+  # Load Patch Triage models, controllers, and helpers
   require_relative("app/models/patch.rb")
   require_relative("app/models/patch_rating.rb")
   require_relative("app/models/patch_claim.rb")
   require_relative("app/models/patch_claim_log.rb")
-  require_relative("app/controllers/hot_or_not_controller.rb")
-  require_relative("app/controllers/hot_or_not/admin/patches_controller.rb")
-  require_relative("app/helpers/hot_or_not_helper.rb")
+  require_relative("app/controllers/patch_triage_controller.rb")
+  require_relative("app/controllers/patch_triage/admin/patches_controller.rb")
+  require_relative("app/helpers/patch_triage_helper.rb")
   require_relative("lib/patch_download_token.rb")
 
   # Add association to Topic model
@@ -285,25 +285,25 @@ after_initialize do
                 controller: "blog/topic_share_tokens"
     end
 
-    # Hot or Not routes (on main Discourse site)
-    get "hot-or-not" => "hot_or_not#index"
-    get "hot-or-not/list" => "hot_or_not#list"
-    get "hot-or-not/leaderboard" => "hot_or_not#leaderboard"
-    get "hot-or-not/stats" => "hot_or_not#stats"
-    get "hot-or-not/my-patches" => "hot_or_not#my_patches"
-    get "hot-or-not/users/:username" => "hot_or_not#user_profile"
-    get "hot-or-not/by/:committer" => "hot_or_not#by_committer"
-    get "hot-or-not/:id" => "hot_or_not#show"
-    post "hot-or-not/:id/rate" => "hot_or_not#rate"
-    get "hot-or-not/:id/download" => "hot_or_not#download"
-    post "hot-or-not/:id/generate-download-token" => "hot_or_not#generate_download_token"
-    get "hot-or-not/p/:token" => "hot_or_not#token_download"
-    post "hot-or-not/:id/claim" => "hot_or_not#claim"
-    delete "hot-or-not/:id/unclaim" => "hot_or_not#unclaim"
-    post "hot-or-not/:id/resolve" => "hot_or_not#resolve"
-    post "hot-or-not/:id/unresolve" => "hot_or_not#unresolve"
+    # Patch Triage routes (on main Discourse site)
+    get "patch-triage" => "patch_triage#index"
+    get "patch-triage/list" => "patch_triage#list"
+    get "patch-triage/leaderboard" => "patch_triage#leaderboard"
+    get "patch-triage/stats" => "patch_triage#stats"
+    get "patch-triage/my-patches" => "patch_triage#my_patches"
+    get "patch-triage/users/:username" => "patch_triage#user_profile"
+    get "patch-triage/by/:committer" => "patch_triage#by_committer"
+    get "patch-triage/:id" => "patch_triage#show", constraints: { id: /\d+/ }
+    post "patch-triage/:id/rate" => "patch_triage#rate"
+    get "patch-triage/:id/download" => "patch_triage#download"
+    post "patch-triage/:id/generate-download-token" => "patch_triage#generate_download_token"
+    get "patch-triage/p/:token" => "patch_triage#token_download"
+    post "patch-triage/:id/claim" => "patch_triage#claim"
+    delete "patch-triage/:id/unclaim" => "patch_triage#unclaim"
+    post "patch-triage/:id/resolve" => "patch_triage#resolve"
+    post "patch-triage/:id/unresolve" => "patch_triage#unresolve"
 
-    scope path: "hot-or-not/admin", module: "hot_or_not/admin", as: "hot_or_not_admin" do
+    scope path: "patch-triage/admin", module: "patch_triage/admin", as: "patch_triage_admin" do
       resources :patches do
         collection do
           get :import
@@ -315,5 +315,20 @@ after_initialize do
         member { post :toggle_active }
       end
     end
+
+    # Backward compatibility redirects from old hot-or-not URLs
+    get "hot-or-not" => redirect("/patch-triage")
+    get "hot-or-not/list" => redirect("/patch-triage/list")
+    get "hot-or-not/leaderboard" => redirect("/patch-triage/leaderboard")
+    get "hot-or-not/stats" => redirect("/patch-triage/stats")
+    get "hot-or-not/my-patches" => redirect("/patch-triage/my-patches")
+    get "hot-or-not/users/:username" => redirect("/patch-triage/users/%{username}")
+    get "hot-or-not/by/:committer" => redirect("/patch-triage/by/%{committer}")
+    get "hot-or-not/:id" => redirect("/patch-triage/%{id}"), constraints: { id: /\d+/ }
+    get "hot-or-not/p/:token" => redirect("/patch-triage/p/%{token}")
+    get "hot-or-not/admin/patches" => redirect("/patch-triage/admin/patches")
+    get "hot-or-not/admin/patches/import" => redirect("/patch-triage/admin/patches/import")
+    get "hot-or-not/admin/patches/new" => redirect("/patch-triage/admin/patches/new")
+    get "hot-or-not/admin/patches/:id/edit" => redirect("/patch-triage/admin/patches/%{id}/edit")
   end
 end

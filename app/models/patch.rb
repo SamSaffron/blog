@@ -46,27 +46,27 @@ class Patch < ActiveRecord::Base
   scope :active, -> { where(active: true) }
   scope :unresolved, -> { where(resolved_at: nil) }
   scope :resolved, -> { where.not(resolved_at: nil) }
-  scope :by_popularity, -> { order(Arel.sql("(hot_count + not_count) DESC")) }
-  scope :by_hot_ratio,
+  scope :by_popularity, -> { order(Arel.sql("(useful_count + not_useful_count) DESC")) }
+  scope :by_useful_ratio,
         -> do
           order(
             Arel.sql(
-              "CASE WHEN (hot_count + not_count) > 0 THEN hot_count::float / (hot_count + not_count) ELSE 0 END DESC",
+              "CASE WHEN (useful_count + not_useful_count) > 0 THEN useful_count::float / (useful_count + not_useful_count) ELSE 0 END DESC",
             ),
           )
         end
   scope :most_controversial,
-        -> { order(Arel.sql("ABS(hot_count - not_count) ASC, (hot_count + not_count) DESC")) }
+        -> { order(Arel.sql("ABS(useful_count - not_useful_count) ASC, (useful_count + not_useful_count) DESC")) }
   scope :authored_by, ->(user) { user ? where(committer_user_id: user.id) : none }
   scope :by_committer, ->(username) { where(committer_github_username: username) }
   scope :by_github_id, ->(github_id) { where(committer_github_id: github_id) }
   scope :claimed_by, ->(user) { joins(:patch_claims).where(patch_claims: { user_id: user.id }) }
   scope :resolved_by, ->(user) { where(resolved_by_id: user.id) }
 
-  def hot_ratio
-    total = hot_count + not_count
+  def useful_ratio
+    total = useful_count + not_useful_count
     return 0.0 if total.zero?
-    (hot_count.to_f / total * 100).round(1)
+    (useful_count.to_f / total * 100).round(1)
   end
 
   def github_commit_url
@@ -205,9 +205,9 @@ class Patch < ActiveRecord::Base
   end
 
   def recount_ratings!
-    hot = patch_ratings.where(is_hot: true).count
-    not_hot = patch_ratings.where(is_hot: false).count
-    update_columns(hot_count: hot, not_count: not_hot)
+    useful = patch_ratings.where(is_useful: true).count
+    not_useful = patch_ratings.where(is_useful: false).count
+    update_columns(useful_count: useful, not_useful_count: not_useful)
   end
 
   def self.random_unrated_for(user, base_scope: nil)

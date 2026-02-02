@@ -17,18 +17,18 @@
         <span class="stat-label">Total Rated</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value hot"><%= @user_stats[:hot_votes] %></span>
-        <span class="stat-label">HOT votes</span>
+        <span class="stat-value useful"><%= @user_stats[:useful_votes] %></span>
+        <span class="stat-label">Useful votes</span>
       </div>
       <div class="stat-item">
-        <span class="stat-value not"><%= @user_stats[:not_votes] %></span>
-        <span class="stat-label">NOT votes</span>
+        <span class="stat-value not-useful"><%= @user_stats[:not_useful_votes] %></span>
+        <span class="stat-label">Not Useful votes</span>
       </div>
     </div>
   </div>
 
   <div class="actions">
-    <a href="/hot-or-not/leaderboard" class="btn-primary">View Leaderboard</a>
-    <a href="/hot-or-not/stats" class="btn-secondary">View My Stats</a>
+    <a href="/patch-triage/leaderboard" class="btn-primary">View Leaderboard</a>
+    <a href="/patch-triage/stats" class="btn-secondary">View My Stats</a>
   </div>
 </div>

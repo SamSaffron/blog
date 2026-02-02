@@ -15,7 +15,7 @@
     </ul>
   </div>
 
-  <%= form_tag("/hot-or-not/admin/patches/perform_import", method: :post, multipart: true, class: "import-form") do %>
+  <%= form_tag("/patch-triage/admin/patches/perform_import", method: :post, multipart: true, class: "import-form") do %>
     <div class="form-group">
       <label for="files">Select Files</label>
       <input type="file" name="files[]" id="files" multiple accept=".md,.patch" class="form-input file-input">
@@ -24,7 +24,7 @@
 
     <div class="form-actions">
       <button type="submit" class="btn-primary">Import Patches</button>
-      <a href="/hot-or-not/admin/patches" class="btn-secondary">Cancel</a>
+      <a href="/patch-triage/admin/patches" class="btn-secondary">Cancel</a>
     </div>
   <% end %>
 </div>

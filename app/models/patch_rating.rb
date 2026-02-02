@@ -6,7 +6,7 @@ class PatchRating < ActiveRecord::Base
 
   validates :patch_id, presence: true
   validates :user_id, presence: true
-  validates :is_hot, inclusion: { in: [true, false] }
+  validates :is_useful, inclusion: { in: [true, false] }
   validates :patch_id, uniqueness: { scope: :user_id }
 
   after_commit :increment_counters, on: :create
@@ -20,18 +20,18 @@ class PatchRating < ActiveRecord::Base
     stats =
       where(user_id: user.id).pick(
         Arel.sql("COUNT(*)::int"),
-        Arel.sql("SUM(CASE WHEN is_hot THEN 1 ELSE 0 END)::int"),
-        Arel.sql("SUM(CASE WHEN is_hot THEN 0 ELSE 1 END)::int"),
+        Arel.sql("SUM(CASE WHEN is_useful THEN 1 ELSE 0 END)::int"),
+        Arel.sql("SUM(CASE WHEN is_useful THEN 0 ELSE 1 END)::int"),
       )
 
     total_rated = stats[0] || 0
-    hot_votes = stats[1] || 0
-    not_votes = stats[2] || 0
+    useful_votes = stats[1] || 0
+    not_useful_votes = stats[2] || 0
 
     # Separate query for remaining (needs subquery)
     remaining = Patch.active.where.not(id: select(:patch_id).where(user_id: user.id)).count
 
-    { total_rated: total_rated, hot_votes: hot_votes, not_votes: not_votes, remaining: remaining }
+    { total_rated: total_rated, useful_votes: useful_votes, not_useful_votes: not_useful_votes, remaining: remaining }
   end
 
   def self.leaderboard(limit: 10)
@@ -46,33 +46,33 @@ class PatchRating < ActiveRecord::Base
   private
 
   def increment_counters
-    if is_hot
-      Patch.where(id: patch_id).update_all("hot_count = hot_count + 1")
+    if is_useful
+      Patch.where(id: patch_id).update_all("useful_count = useful_count + 1")
     else
-      Patch.where(id: patch_id).update_all("not_count = not_count + 1")
+      Patch.where(id: patch_id).update_all("not_useful_count = not_useful_count + 1")
     end
   end
 
   def decrement_counters
-    if is_hot
-      Patch.where(id: patch_id).update_all("hot_count = GREATEST(hot_count - 1, 0)")
+    if is_useful
+      Patch.where(id: patch_id).update_all("useful_count = GREATEST(useful_count - 1, 0)")
     else
-      Patch.where(id: patch_id).update_all("not_count = GREATEST(not_count - 1, 0)")
+      Patch.where(id: patch_id).update_all("not_useful_count = GREATEST(not_useful_count - 1, 0)")
     end
   end
 
   def update_counters_on_change
-    return unless saved_change_to_is_hot?
+    return unless saved_change_to_is_useful?
 
-    if is_hot
-      # Changed from NOT to HOT
+    if is_useful
+      # Changed from NOT USEFUL to USEFUL
       Patch.where(id: patch_id).update_all(
-        "hot_count = hot_count + 1, not_count = GREATEST(not_count - 1, 0)",
+        "useful_count = useful_count + 1, not_useful_count = GREATEST(not_useful_count - 1, 0)",
       )
     else
-      # Changed from HOT to NOT
+      # Changed from USEFUL to NOT USEFUL
       Patch.where(id: patch_id).update_all(
-        "not_count = not_count + 1, hot_count = GREATEST(hot_count - 1, 0)",
+        "not_useful_count = not_useful_count + 1, useful_count = GREATEST(useful_count - 1, 0)",
       )
     end
   end

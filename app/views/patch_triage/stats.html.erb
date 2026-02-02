@@ -25,13 +25,13 @@
     </div>
 
     <div class="stats-cards">
-      <div class="stats-card hot-card">
-        <div class="card-value"><%= @user_stats[:hot_votes] %></div>
-        <div class="card-label">HOT</div>
+      <div class="stats-card useful-card">
+        <div class="card-value"><%= @user_stats[:useful_votes] %></div>
+        <div class="card-label">Useful</div>
       </div>
-      <div class="stats-card not-card">
-        <div class="card-value"><%= @user_stats[:not_votes] %></div>
-        <div class="card-label">NOT</div>
+      <div class="stats-card not-useful-card">
+        <div class="card-value"><%= @user_stats[:not_useful_votes] %></div>
+        <div class="card-label">Not Useful</div>
       </div>
       <div class="stats-card remaining-card">
         <div class="card-value"><%= @user_stats[:remaining] %></div>
@@ -42,23 +42,23 @@
     <% if @user_stats[:total_rated] > 0 %>
       <div class="voting-pattern">
         <h3>Your Voting Pattern</h3>
-        <% hot_pct = (@user_stats[:hot_votes].to_f / @user_stats[:total_rated] * 100).round %>
+        <% useful_pct = (@user_stats[:useful_votes].to_f / @user_stats[:total_rated] * 100).round %>
         <div class="pattern-bar">
-          <div class="pattern-hot" style="width: <%= hot_pct %>%">
-            <% if hot_pct >= 15 %><span><%= hot_pct %>%</span><% end %>
+          <div class="pattern-useful" style="width: <%= useful_pct %>%">
+            <% if useful_pct >= 15 %><span><%= useful_pct %>%</span><% end %>
           </div>
-          <div class="pattern-not" style="width: <%= 100 - hot_pct %>%">
-            <% if (100 - hot_pct) >= 15 %><span><%= 100 - hot_pct %>%</span><% end %>
+          <div class="pattern-not-useful" style="width: <%= 100 - useful_pct %>%">
+            <% if (100 - useful_pct) >= 15 %><span><%= 100 - useful_pct %>%</span><% end %>
           </div>
         </div>
         <div class="pattern-legend">
-          <span class="legend-hot">HOT</span>
-          <span class="legend-not">NOT</span>
+          <span class="legend-useful">Useful</span>
+          <span class="legend-not-useful">Not Useful</span>
         </div>
         <p class="pattern-insight">
-          <% if hot_pct > 60 %>
+          <% if useful_pct > 60 %>
             You're an optimist! You see the good in most patches.
-          <% elsif hot_pct < 40 %>
+          <% elsif useful_pct < 40 %>
             You have high standards - most patches don't impress you.
           <% else %>
             You're balanced - you call it like you see it.
@@ -72,16 +72,16 @@
         <h3>Recent Activity</h3>
         <div class="activity-list">
           <% @recent_ratings.each do |rating| %>
-            <a href="/hot-or-not/<%= rating.patch.id %>" class="activity-item">
-              <span class="activity-vote <%= rating.is_hot ? 'hot' : 'not' %>">
-                <%= rating.is_hot ? "HOT" : "NOT" %>
+            <a href="/patch-triage/<%= rating.patch.id %>" class="activity-item">
+              <span class="activity-vote <%= rating.is_useful ? 'useful' : 'not-useful' %>">
+                <%= rating.is_useful ? "Useful" : "Not Useful" %>
               </span>
               <span class="activity-info">
                 <span class="activity-title"><%= rating.patch.title.sub(/^Audit Fix:\s*/i, '').truncate(55) %></span>
                 <span class="activity-meta">
                   <code><%= rating.patch.commit_hash[0..7] %></code>
                   <span class="activity-date"><%= rating.created_at.strftime("%b %d") %></span>
-                  <span class="activity-community"><%= rating.patch.hot_ratio %>% approval</span>
+                  <span class="activity-community"><%= rating.patch.useful_ratio %>% approval</span>
                 </span>
               </span>
             </a>
@@ -92,7 +92,7 @@
 
     <% if @user_stats[:remaining] > 0 %>
       <div class="stats-cta">
-        <a href="/hot-or-not" class="cta-button">
+        <a href="/patch-triage" class="cta-button">
           Keep Rating
           <span class="cta-count"><%= @user_stats[:remaining] %> left</span>
         </a>

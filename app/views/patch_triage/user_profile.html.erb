@@ -1,21 +1,16 @@
 <% content_for :title do %>
-  Your Patches
+  Patches by @<%= @user.username %>
 <% end %>
 
 <div class="committer-container">
   <div class="committer-header">
-    <h1>Your Patches</h1>
-    <% if @current_user_github_username.present? %>
-      <p class="my-patches-subtitle">
-        GitHub: <%= @current_user_github_username %>
-      </p>
-    <% end %>
+    <h1>Patches by @<%= @user.username %></h1>
   </div>
 
   <div class="patch-tabs">
-    <a href="/hot-or-not/my-patches?tab=authored" class="tab-btn <%= 'active' if @tab == 'authored' %>">Authored</a>
-    <a href="/hot-or-not/my-patches?tab=claimed" class="tab-btn <%= 'active' if @tab == 'claimed' %>">Claimed</a>
-    <a href="/hot-or-not/my-patches?tab=resolved" class="tab-btn <%= 'active' if @tab == 'resolved' %>">Resolved</a>
+    <a href="/patch-triage/users/<%= ERB::Util.url_encode(@user.username) %>?tab=claimed" class="tab-btn <%= 'active' if @tab == 'claimed' %>">Claimed</a>
+    <a href="/patch-triage/users/<%= ERB::Util.url_encode(@user.username) %>?tab=resolved" class="tab-btn <%= 'active' if @tab == 'resolved' %>">Resolved</a>
+    <a href="/patch-triage/users/<%= ERB::Util.url_encode(@user.username) %>?tab=authored" class="tab-btn <%= 'active' if @tab == 'authored' %>">Authored</a>
   </div>
 
   <div class="committer-stats-grid">
@@ -28,7 +23,7 @@
       <span class="stat-label">Total Votes</span>
     </div>
     <div class="stat-item">
-      <span class="stat-value hot"><%= @tab_stats[:avg_hot_ratio] %>%</span>
+      <span class="stat-value useful"><%= @tab_stats[:avg_useful_ratio] %>%</span>
       <span class="stat-label">Avg Approval</span>
     </div>
   </div>
@@ -36,7 +31,7 @@
   <% if @patches.any? %>
     <div class="patch-list">
       <% @patches.each_with_index do |patch, index| %>
-        <a href="/hot-or-not/<%= patch.id %>" class="patch-list-item">
+        <a href="/patch-triage/<%= patch.id %>" class="patch-list-item">
           <span class="patch-rank"><%= index + 1 %></span>
           <span class="patch-info">
             <span class="patch-name"><%= patch.title.sub(/^Audit Fix:\s*/i, '').truncate(70) %></span>
@@ -53,8 +48,8 @@
               <% end %>
             </span>
           </span>
-          <% if patch.hot_count + patch.not_count > 0 %>
-            <span class="patch-score hot"><%= patch.hot_ratio %>%</span>
+          <% if patch.useful_count + patch.not_useful_count > 0 %>
+            <span class="patch-score useful"><%= patch.useful_ratio %>%</span>
           <% else %>
             <span class="patch-score unrated">-</span>
           <% end %>
@@ -65,23 +60,19 @@
     <p class="empty-message">
       <% case @tab %>
       <% when "authored" %>
-        <% if @current_user_github_id %>
-          No patches found linked to your GitHub account.
-        <% else %>
-          Link your GitHub account to see patches you've authored.
-        <% end %>
+        No authored patches found for this user.
       <% when "claimed" %>
-        You haven't claimed any patches yet.
+        This user hasn't claimed any patches.
       <% when "resolved" %>
-        You haven't resolved any patches yet.
+        This user hasn't resolved any patches.
       <% end %>
     </p>
   <% end %>
 
   <div class="committer-actions">
-    <a href="/hot-or-not/leaderboard" class="btn-secondary">Back to Leaderboard</a>
+    <a href="/patch-triage/leaderboard" class="btn-secondary">Back to Leaderboard</a>
     <% if @user_stats[:remaining] > 0 %>
-      <a href="/hot-or-not" class="btn-primary">Rate Patches</a>
+      <a href="/patch-triage" class="btn-primary">Rate Patches</a>
     <% end %>
   </div>
 </div>
