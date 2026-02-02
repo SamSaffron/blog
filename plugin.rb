@@ -125,6 +125,7 @@ after_initialize do
   require_relative("app/models/patch.rb")
   require_relative("app/models/patch_rating.rb")
   require_relative("app/models/patch_claim.rb")
+  require_relative("app/models/patch_claim_log.rb")
   require_relative("app/controllers/hot_or_not_controller.rb")
   require_relative("app/controllers/hot_or_not/admin/patches_controller.rb")
   require_relative("app/helpers/hot_or_not_helper.rb")
@@ -140,6 +141,7 @@ after_initialize do
     User.class_eval do
       has_many :patch_ratings, dependent: :destroy
       has_many :patch_claims, dependent: :destroy
+      has_many :patch_claim_logs, dependent: :destroy
     end
   end
 

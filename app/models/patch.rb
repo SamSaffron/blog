@@ -3,6 +3,7 @@
 class Patch < ActiveRecord::Base
   has_many :patch_ratings, dependent: :destroy
   has_many :patch_claims, dependent: :destroy
+  has_many :patch_claim_logs, dependent: :destroy
   belongs_to :committer, class_name: "User", foreign_key: "committer_user_id", optional: true
   belongs_to :resolved_by, class_name: "User", foreign_key: "resolved_by_id", optional: true
 
@@ -88,13 +89,33 @@ class Patch < ActiveRecord::Base
   end
 
   def resolve!(user:, status:, notes: nil, changeset_url: nil)
-    update!(
-      resolved_at: Time.current,
-      resolved_by_id: user.id,
-      resolution_status: status,
-      resolution_notes: notes,
-      resolution_changeset_url: changeset_url,
-    )
+    transaction do
+      claim_user_ids = patch_claims.pluck(:user_id)
+      if claim_user_ids.present?
+        now = Time.current
+        log_records =
+          claim_user_ids.map do |user_id|
+            {
+              patch_id: id,
+              user_id: user_id,
+              action: "unclaimed",
+              notes: "auto: patch resolved as #{status}",
+              created_at: now,
+              updated_at: now,
+            }
+          end
+        PatchClaimLog.insert_all(log_records)
+        patch_claims.delete_all
+      end
+
+      update!(
+        resolved_at: Time.current,
+        resolved_by_id: user.id,
+        resolution_status: status,
+        resolution_notes: notes,
+        resolution_changeset_url: changeset_url,
+      )
+    end
   end
 
   def unresolve!
@@ -113,11 +134,17 @@ class Patch < ActiveRecord::Base
   end
 
   def claim_for(user, notes: nil)
-    patch_claims.create!(user: user, notes: notes)
+    transaction do
+      patch_claims.create!(user: user, notes: notes)
+      patch_claim_logs.create!(user: user, action: "claimed", notes: notes)
+    end
   end
 
   def unclaim_for(user)
-    patch_claims.where(user: user).destroy_all
+    transaction do
+      removed = patch_claims.where(user: user).delete_all
+      patch_claim_logs.create!(user: user, action: "unclaimed") if removed > 0
+    end
   end
 
   def match_committer_to_user!
