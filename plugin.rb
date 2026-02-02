@@ -128,6 +128,7 @@ after_initialize do
   require_relative("app/controllers/hot_or_not_controller.rb")
   require_relative("app/controllers/hot_or_not/admin/patches_controller.rb")
   require_relative("app/helpers/hot_or_not_helper.rb")
+  require_relative("lib/patch_download_token.rb")
 
   # Add association to Topic model
   reloadable_patch do |plugin|
@@ -288,10 +289,13 @@ after_initialize do
     get "hot-or-not/leaderboard" => "hot_or_not#leaderboard"
     get "hot-or-not/stats" => "hot_or_not#stats"
     get "hot-or-not/my-patches" => "hot_or_not#my_patches"
+    get "hot-or-not/users/:username" => "hot_or_not#user_profile"
     get "hot-or-not/by/:committer" => "hot_or_not#by_committer"
     get "hot-or-not/:id" => "hot_or_not#show"
     post "hot-or-not/:id/rate" => "hot_or_not#rate"
     get "hot-or-not/:id/download" => "hot_or_not#download"
+    post "hot-or-not/:id/generate-download-token" => "hot_or_not#generate_download_token"
+    get "hot-or-not/p/:token" => "hot_or_not#token_download"
     post "hot-or-not/:id/claim" => "hot_or_not#claim"
     delete "hot-or-not/:id/unclaim" => "hot_or_not#unclaim"
     post "hot-or-not/:id/resolve" => "hot_or_not#resolve"

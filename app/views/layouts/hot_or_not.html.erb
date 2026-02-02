@@ -9,7 +9,8 @@
   <%- end %>
   <title><%= yield(:title).presence || "Hot or Not" %></title>
   <link rel="stylesheet" href="/plugins/blog/blog.css?v=34">
-  <link rel="stylesheet" href="/plugins/blog/hot-or-not.css?v=4">
+  <link rel="stylesheet" href="/plugins/blog/hot-or-not.css?v=9">
+  <script src="/plugins/blog/hot-or-not.js?v=6" nonce="<%= csp_nonce_placeholder %>"></script>
 </head>
 
 <body class="hot-or-not-page">
@@ -21,7 +22,7 @@
         <a href="/hot-or-not/list" class="<%= 'active' if request.path == '/hot-or-not/list' %>">List</a>
         <a href="/hot-or-not/leaderboard" class="<%= 'active' if request.path.start_with?('/hot-or-not/leaderboard', '/hot-or-not/by/') %>">Leaderboard</a>
         <a href="/hot-or-not/stats" class="<%= 'active' if request.path == '/hot-or-not/stats' %>">Stats</a>
-        <% if @current_user_github_username %>
+        <% if current_user %>
         <a href="/hot-or-not/my-patches" class="<%= 'active' if request.path == '/hot-or-not/my-patches' %>"><%= current_user.username.capitalize %></a>
         <% end %>
         <% if current_user&.admin? %>

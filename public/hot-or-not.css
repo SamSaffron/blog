@@ -293,6 +293,74 @@
   margin: 0;
 }
 
+.patch-diff .diff-actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.patch-diff .copy-curl-btn {
+  font-size: var(--text-sm);
+  color: #64748b;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--border-radius);
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+  user-select: none;
+}
+
+.patch-diff .copy-curl-btn:hover {
+  color: #1e293b;
+  border-color: #94a3b8;
+  background: #f1f5f9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.patch-diff .copy-curl-btn:active {
+  transform: scale(0.95);
+  background: #e2e8f0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.patch-diff .copy-curl-btn:disabled {
+  cursor: wait;
+}
+
+.patch-diff .copy-curl-btn.loading {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.patch-diff .copy-curl-btn.copied {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+  font-weight: 600;
+  animation: copy-success 0.3s ease;
+}
+
+.patch-diff .copy-curl-btn.error {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  animation: copy-error 0.4s ease;
+}
+
+@keyframes copy-success {
+  0% { transform: scale(0.95); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes copy-error {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-3px); }
+  40%, 80% { transform: translateX(3px); }
+}
+
 .patch-diff .download-patch {
   font-size: var(--text-sm);
   color: #64748b;
@@ -2203,4 +2271,248 @@
   .filter-group label {
     min-width: auto;
   }
+}
+
+/* ============================================================================
+   Patch Tabs (My Patches / User Profile)
+   ============================================================================ */
+
+.patch-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--space-2);
+}
+
+.patch-tabs .tab-btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.patch-tabs .tab-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  text-decoration: none;
+}
+
+.patch-tabs .tab-btn.active {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.patch-tabs .tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-accent);
+}
+
+/* ============================================================================
+   Resolve Section with Changeset Input
+   ============================================================================ */
+
+.resolve-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.resolve-fixed-form {
+  background: var(--color-bg-primary);
+  border: 1px solid #86efac;
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+}
+
+.changeset-input {
+  margin-bottom: var(--space-3);
+}
+
+.changeset-input label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #166534;
+  margin-bottom: var(--space-2);
+}
+
+.changeset-url-field {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono);
+}
+
+.changeset-url-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.resolution-changeset {
+  margin-top: var(--space-2);
+}
+
+.resolution-changeset a {
+  color: var(--color-accent);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.resolution-changeset a:hover {
+  text-decoration: underline;
+}
+
+.resolution-info a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.resolution-info a:hover {
+  text-decoration: underline;
+}
+
+.current-claims a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.current-claims a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   Modal Dialog
+   ============================================================================ */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.modal-content {
+  background: var(--color-bg-primary);
+  border-radius: var(--border-radius);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-body {
+  padding: var(--space-5);
+}
+
+.modal-body .form-group {
+  margin-bottom: var(--space-4);
+}
+
+.modal-body .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.modal-body label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.modal-body label .required {
+  color: #dc2626;
+  font-weight: normal;
+  font-size: var(--text-sm);
+}
+
+.modal-body label .optional {
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+  font-size: var(--text-sm);
+}
+
+.modal-body .form-help {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.modal-body textarea.form-input {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+/* ============================================================================
+   Leaderboard - Resolver Stats
+   ============================================================================ */
+
+.leaderboard-table .resolved-fixed {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.leaderboard-table .resolved-invalid {
+  color: #f59e0b;
+  font-weight: 600;
 }

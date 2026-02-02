@@ -46,9 +46,15 @@
     <div class="resolution-info">
       <p>
         <strong>Resolved as <%= @patch.resolution_status %></strong>
-        by <%= @patch.resolved_by&.username || "Unknown" %>
+        by <% if @patch.resolved_by&.username.present? %><a href="/hot-or-not/users/<%= ERB::Util.url_encode(@patch.resolved_by.username) %>"><%= @patch.resolved_by.username %></a><% else %>Unknown<% end %>
         on <%= @patch.resolved_at.strftime("%Y-%m-%d") %>
       </p>
+      <% if @patch.resolution_changeset_url.present? %>
+        <p class="resolution-changeset">
+          <strong>Changeset:</strong>
+          <a href="<%= @patch.resolution_changeset_url %>" target="_blank" rel="noopener"><%= @patch.resolution_changeset_url %></a>
+        </p>
+      <% end %>
       <% if @patch.resolution_notes.present? %>
         <p class="resolution-notes"><%= @patch.resolution_notes %></p>
       <% end %>
@@ -65,7 +71,12 @@
   <div class="patch-diff">
     <div class="diff-header-row">
       <h3>Diff</h3>
-      <a href="/hot-or-not/<%= @patch.id %>/download" class="download-patch">Download .patch</a>
+      <div class="diff-actions">
+        <button type="button" class="copy-curl-btn" data-patch-id="<%= @patch.id %>">
+          Copy curl command
+        </button>
+        <a href="/hot-or-not/<%= @patch.id %>/download" class="download-patch">Download .patch</a>
+      </div>
     </div>
     <pre class="diff-view"><code><%= highlight_diff(@patch.diff_content) %></code></pre>
   </div>
@@ -83,36 +94,19 @@
     <div class="reviewer-actions">
       <h3>Reviewer Actions</h3>
       <div class="claim-buttons">
-        <% if @patch.claimed_by?(current_user, purpose: 'review') %>
+        <% if @patch.claimed_by?(current_user) %>
           <%= form_tag("/hot-or-not/#{@patch.id}/unclaim", method: :delete, style: "display: inline") do %>
-            <%= hidden_field_tag :purpose, "review" %>
-            <button type="submit" class="unclaim-btn">Unclaim Review</button>
+            <button type="submit" class="unclaim-btn">Unclaim</button>
           <% end %>
         <% else %>
           <%= form_tag("/hot-or-not/#{@patch.id}/claim", method: :post, style: "display: inline") do %>
-            <%= hidden_field_tag :purpose, "review" %>
-            <button type="submit" class="claim-btn">Claim for Review</button>
-          <% end %>
-        <% end %>
-
-        <% if @patch.claimed_by?(current_user, purpose: 'fix') %>
-          <%= form_tag("/hot-or-not/#{@patch.id}/unclaim", method: :delete, style: "display: inline") do %>
-            <%= hidden_field_tag :purpose, "fix" %>
-            <button type="submit" class="unclaim-btn">Unclaim Fix</button>
-          <% end %>
-        <% else %>
-          <%= form_tag("/hot-or-not/#{@patch.id}/claim", method: :post, style: "display: inline") do %>
-            <%= hidden_field_tag :purpose, "fix" %>
-            <button type="submit" class="claim-btn">Claim for Fix</button>
+            <button type="submit" class="claim-btn">Claim</button>
           <% end %>
         <% end %>
       </div>
 
       <div class="resolve-buttons">
-        <%= form_tag("/hot-or-not/#{@patch.id}/resolve", method: :post, style: "display: inline") do %>
-          <%= hidden_field_tag :status, "fixed" %>
-          <button type="submit" class="resolve-btn resolve-btn-fixed">Resolve as Fixed</button>
-        <% end %>
+        <button type="button" class="resolve-btn resolve-btn-fixed" id="open-resolve-modal">Resolve as Fixed</button>
         <%= form_tag("/hot-or-not/#{@patch.id}/resolve", method: :post, style: "display: inline") do %>
           <%= hidden_field_tag :status, "invalid" %>
           <button type="submit" class="resolve-btn resolve-btn-invalid">Resolve as Invalid</button>
@@ -122,10 +116,10 @@
       <% claims = @patch.patch_claims.includes(:user) %>
       <% if claims.any? %>
         <div class="current-claims">
-          <p><strong>Current claims:</strong></p>
+          <p><strong>Claimed by:</strong></p>
           <ul>
             <% claims.each do |claim| %>
-              <li><%= claim.user.username %> - <%= claim.purpose %></li>
+              <li><a href="/hot-or-not/users/<%= ERB::Util.url_encode(claim.user.username) %>"><%= claim.user.username %></a></li>
             <% end %>
           </ul>
         </div>
@@ -196,3 +190,32 @@
     </p>
   </div>
 </div>
+
+<% if @is_reviewer && !@patch.resolved? %>
+<div id="resolve-modal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Resolve as Fixed</h3>
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+    </div>
+    <%= form_tag("/hot-or-not/#{@patch.id}/resolve", method: :post) do %>
+      <%= hidden_field_tag :status, "fixed" %>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="changeset_url">Changeset URL <span class="required">(required)</span></label>
+          <%= text_field_tag :changeset_url, nil, placeholder: "https://github.com/discourse/discourse/commit/...", class: "form-input", required: true %>
+          <p class="form-help">Link to the commit or PR that fixes this issue</p>
+        </div>
+        <div class="form-group">
+          <label for="notes">Notes <span class="optional">(optional)</span></label>
+          <%= text_area_tag :notes, nil, placeholder: "Any additional notes about the fix...", class: "form-input", rows: 3 %>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
+        <button type="submit" class="resolve-btn resolve-btn-fixed">Resolve as Fixed</button>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% end %>

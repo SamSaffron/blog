@@ -1,21 +1,16 @@
 <% content_for :title do %>
-  Your Patches
+  Patches by @<%= @user.username %>
 <% end %>
 
 <div class="committer-container">
   <div class="committer-header">
-    <h1>Your Patches</h1>
-    <% if @current_user_github_username.present? %>
-      <p class="my-patches-subtitle">
-        GitHub: <%= @current_user_github_username %>
-      </p>
-    <% end %>
+    <h1>Patches by @<%= @user.username %></h1>
   </div>
 
   <div class="patch-tabs">
-    <a href="/hot-or-not/my-patches?tab=authored" class="tab-btn <%= 'active' if @tab == 'authored' %>">Authored</a>
-    <a href="/hot-or-not/my-patches?tab=claimed" class="tab-btn <%= 'active' if @tab == 'claimed' %>">Claimed</a>
-    <a href="/hot-or-not/my-patches?tab=resolved" class="tab-btn <%= 'active' if @tab == 'resolved' %>">Resolved</a>
+    <a href="/hot-or-not/users/<%= ERB::Util.url_encode(@user.username) %>?tab=claimed" class="tab-btn <%= 'active' if @tab == 'claimed' %>">Claimed</a>
+    <a href="/hot-or-not/users/<%= ERB::Util.url_encode(@user.username) %>?tab=resolved" class="tab-btn <%= 'active' if @tab == 'resolved' %>">Resolved</a>
+    <a href="/hot-or-not/users/<%= ERB::Util.url_encode(@user.username) %>?tab=authored" class="tab-btn <%= 'active' if @tab == 'authored' %>">Authored</a>
   </div>
 
   <div class="committer-stats-grid">
@@ -65,15 +60,11 @@
     <p class="empty-message">
       <% case @tab %>
       <% when "authored" %>
-        <% if @current_user_github_id %>
-          No patches found linked to your GitHub account.
-        <% else %>
-          Link your GitHub account to see patches you've authored.
-        <% end %>
+        No authored patches found for this user.
       <% when "claimed" %>
-        You haven't claimed any patches yet.
+        This user hasn't claimed any patches.
       <% when "resolved" %>
-        You haven't resolved any patches yet.
+        This user hasn't resolved any patches.
       <% end %>
     </p>
   <% end %>

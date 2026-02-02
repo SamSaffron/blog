@@ -6,6 +6,39 @@
   <h1>Leaderboard</h1>
 
   <div class="leaderboard-section">
+    <h2>Top Resolvers</h2>
+    <p class="section-description">Users who have resolved the most patches</p>
+    <% if @top_resolvers.any? %>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>User</th>
+            <th>Resolved</th>
+            <th>Fixed</th>
+            <th>Invalid</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_resolvers.each_with_index do |row, index| %>
+            <tr class="<%= 'current-user' if row.user_id == current_user&.id %>">
+              <td class="rank"><%= index + 1 %></td>
+              <td class="username">
+                <a href="/hot-or-not/users/<%= ERB::Util.url_encode(row.username) %>"><%= row.username %></a>
+              </td>
+              <td class="count"><%= row.resolved_count %></td>
+              <td class="count resolved-fixed"><%= row.fixed_count %></td>
+              <td class="count resolved-invalid"><%= row.invalid_count %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="empty-message">No patches resolved yet.</p>
+    <% end %>
+  </div>
+
+  <div class="leaderboard-section">
     <h2>Top Raters</h2>
     <% if @top_raters.any? %>
       <table class="leaderboard-table">
@@ -20,7 +53,9 @@
           <% @top_raters.each_with_index do |user, index| %>
             <tr class="<%= 'current-user' if user.id == current_user&.id %>">
               <td class="rank"><%= index + 1 %></td>
-              <td class="username"><%= user.username %></td>
+              <td class="username">
+                <a href="/hot-or-not/users/<%= ERB::Util.url_encode(user.username) %>"><%= user.username %></a>
+              </td>
               <td class="count"><%= user.rating_count %></td>
             </tr>
           <% end %>

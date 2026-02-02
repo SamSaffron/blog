@@ -2,7 +2,7 @@
 
 class HotOrNotController < ApplicationController
   skip_before_action :check_xhr
-  before_action :ensure_logged_in
+  before_action :ensure_logged_in, except: [:token_download]
   before_action :set_current_user_github_info
   helper HotOrNotHelper
 
@@ -54,14 +54,56 @@ class HotOrNotController < ApplicationController
     end
   end
 
-  def my_patches
-    unless @current_user_github_id
-      redirect_to "/hot-or-not", alert: "Link your GitHub account to see your patches"
-      return
-    end
+  MY_PATCHES_TABS = %w[authored claimed resolved].freeze
 
-    @patches = Patch.active.by_github_id(@current_user_github_id).by_hot_ratio
-    @committer_stats = calculate_committer_stats(@patches)
+  def my_patches
+    @tab = MY_PATCHES_TABS.include?(params[:tab]) ? params[:tab] : "authored"
+
+    @patches =
+      case @tab
+      when "claimed"
+        Patch.active.claimed_by(current_user).by_hot_ratio
+      when "resolved"
+        Patch.active.resolved_by(current_user).order(resolved_at: :desc)
+      else # "authored"
+        if @current_user_github_id
+          Patch.active.by_github_id(@current_user_github_id).by_hot_ratio
+        else
+          Patch.none
+        end
+      end
+
+    @tab_stats = calculate_patch_stats(@patches)
+    @user_stats = PatchRating.user_stats(current_user)
+  end
+
+  USER_PROFILE_TABS = %w[claimed resolved authored].freeze
+
+  def user_profile
+    @user = User.find_by_username(params[:username])
+    raise Discourse::NotFound unless @user
+
+    @tab = USER_PROFILE_TABS.include?(params[:tab]) ? params[:tab] : "claimed"
+
+    # Get GitHub ID for the user to look up authored patches
+    github_account = UserAssociatedAccount.find_by(user_id: @user.id, provider_name: "github")
+    user_github_id = github_account&.provider_uid&.to_i
+
+    @patches =
+      case @tab
+      when "authored"
+        if user_github_id
+          Patch.active.by_github_id(user_github_id).by_hot_ratio
+        else
+          Patch.none
+        end
+      when "resolved"
+        Patch.active.resolved_by(@user).order(resolved_at: :desc)
+      else # "claimed"
+        Patch.active.claimed_by(@user).by_hot_ratio
+      end
+
+    @tab_stats = calculate_patch_stats(@patches)
     @user_stats = PatchRating.user_stats(current_user)
   end
 
@@ -81,13 +123,13 @@ class HotOrNotController < ApplicationController
     end
 
     if params[:claimed] == "1"
-      @patches = @patches.joins(:patch_claims).distinct
+      @patches = @patches.where(id: PatchClaim.select(:patch_id))
     elsif params[:claimed] == "0"
-      @patches = @patches.left_joins(:patch_claims).where(patch_claims: { id: nil })
+      @patches = @patches.where.not(id: PatchClaim.select(:patch_id))
     end
 
     if params[:claimed_by_me] == "1" && current_user
-      @patches = @patches.joins(:patch_claims).where(patch_claims: { user_id: current_user.id }).distinct
+      @patches = @patches.where(id: PatchClaim.where(user_id: current_user.id).select(:patch_id))
     end
 
     # Sorting
@@ -97,11 +139,11 @@ class HotOrNotController < ApplicationController
     when "controversial"
       @patches.most_controversial
     when "newest"
-      @patches.order(created_at: :desc)
+      @patches.order("patches.created_at DESC")
     when "oldest"
-      @patches.order(created_at: :asc)
+      @patches.order("patches.created_at ASC")
     else
-      @patches.order(Arel.sql("(hot_count + not_count) DESC, created_at DESC"))
+      @patches.order(Arel.sql("(hot_count + not_count) DESC, patches.created_at DESC"))
     end
 
     # Pagination
@@ -126,29 +168,21 @@ class HotOrNotController < ApplicationController
       return
     end
 
-    purpose = params[:purpose]
-
-    if PatchClaim::PURPOSES.exclude?(purpose)
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "Invalid claim purpose"
+    if @patch.claimed_by?(current_user)
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "You have already claimed this patch"
       return
     end
 
-    if @patch.claimed_by?(current_user, purpose: purpose)
-      redirect_to "/hot-or-not/#{@patch.id}", alert: "You have already claimed this patch for #{purpose}"
-      return
-    end
-
-    @patch.claim_for(current_user, purpose: purpose, notes: params[:notes])
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Claimed patch for #{purpose}"
+    @patch.claim_for(current_user, notes: params[:notes])
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch claimed"
   end
 
   def unclaim
     ensure_reviewer!
     @patch = Patch.active.find(params[:id])
-    purpose = params[:purpose]
 
-    @patch.unclaim_for(current_user, purpose: purpose)
-    redirect_to "/hot-or-not/#{@patch.id}", notice: "Unclaimed patch"
+    @patch.unclaim_for(current_user)
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch unclaimed"
   end
 
   def resolve
@@ -161,7 +195,22 @@ class HotOrNotController < ApplicationController
       return
     end
 
-    @patch.resolve!(user: current_user, status: status, notes: params[:notes])
+    changeset_url = params[:changeset_url]&.strip.presence
+
+    if status == "fixed" && changeset_url.blank?
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Changeset URL is required when resolving as fixed"
+      return
+    end
+
+    if status == "fixed" && !Patch.valid_changeset_url?(changeset_url)
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Changeset URL must be a valid HTTP or HTTPS URL"
+      return
+    end
+
+    # Only store changeset URL for "fixed" status
+    changeset_url = nil unless status == "fixed"
+
+    @patch.resolve!(user: current_user, status: status, notes: params[:notes], changeset_url: changeset_url)
     redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch marked as #{status}"
   end
 
@@ -174,6 +223,7 @@ class HotOrNotController < ApplicationController
   end
 
   def leaderboard
+    @top_resolvers = top_resolvers_query(10)
     @top_raters = PatchRating.leaderboard(limit: 20)
     @hottest_patches =
       Patch.active.includes(:committer).where("hot_count + not_count > 0").by_hot_ratio.limit(10)
@@ -207,7 +257,50 @@ class HotOrNotController < ApplicationController
     send_data @patch.diff_content, filename: filename, type: "text/x-patch", disposition: "attachment"
   end
 
+  def generate_download_token
+    @patch = Patch.active.find(params[:id])
+    token = PatchDownloadToken.generate(@patch.id)
+    base_url = Discourse.base_url
+    curl_command = "curl -sL '#{base_url}/hot-or-not/p/#{token}' | git apply"
+    render json: { curl_command: curl_command }
+  end
+
+  def token_download
+    patch_id = PatchDownloadToken.validate(params[:token])
+
+    if patch_id.nil?
+      render plain: "Token expired or invalid", status: :unauthorized
+      return
+    end
+
+    @patch = Patch.active.find_by(id: patch_id)
+
+    if @patch.nil?
+      render plain: "Patch not found", status: :not_found
+      return
+    end
+
+    render plain: @patch.diff_content, content_type: "text/plain"
+  end
+
   private
+
+  def top_resolvers_query(limit)
+    Patch
+      .active
+      .resolved
+      .joins("INNER JOIN users ON users.id = patches.resolved_by_id")
+      .group("users.id, users.username")
+      .select(
+        "users.id as user_id",
+        "users.username as username",
+        "COUNT(*) as resolved_count",
+        "SUM(CASE WHEN resolution_status = 'fixed' THEN 1 ELSE 0 END) as fixed_count",
+        "SUM(CASE WHEN resolution_status = 'invalid' THEN 1 ELSE 0 END) as invalid_count",
+      )
+      .order("resolved_count DESC")
+      .limit(limit)
+  end
 
   def top_committers_query(limit)
     Patch
@@ -228,6 +321,10 @@ class HotOrNotController < ApplicationController
   end
 
   def calculate_committer_stats(patches)
+    calculate_patch_stats(patches)
+  end
+
+  def calculate_patch_stats(patches)
     total_patches = patches.count
     rated_patches = patches.where("hot_count + not_count > 0")
     total_votes = rated_patches.sum("hot_count + not_count")

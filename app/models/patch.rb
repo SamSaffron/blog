@@ -17,9 +17,27 @@ class Patch < ActiveRecord::Base
             }
   validates :title, presence: true
   validates :resolution_status, inclusion: { in: %w[fixed invalid], allow_nil: true }
+  validate :changeset_url_valid_for_fixed
 
   private def normalize_commit_hash
     self.commit_hash = commit_hash&.downcase&.strip
+  end
+
+  private def changeset_url_valid_for_fixed
+    return unless resolution_status == "fixed"
+    if resolution_changeset_url.blank?
+      errors.add(:resolution_changeset_url, "is required when resolving as fixed")
+    elsif !self.class.valid_changeset_url?(resolution_changeset_url)
+      errors.add(:resolution_changeset_url, "must be a valid HTTP or HTTPS URL")
+    end
+  end
+
+  def self.valid_changeset_url?(url)
+    return false if url.blank?
+    uri = URI.parse(url.to_s.strip)
+    (uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)) && uri.host.present?
+  rescue URI::InvalidURIError
+    false
   end
 
   public
@@ -41,6 +59,8 @@ class Patch < ActiveRecord::Base
   scope :authored_by, ->(user) { user ? where(committer_user_id: user.id) : none }
   scope :by_committer, ->(username) { where(committer_github_username: username) }
   scope :by_github_id, ->(github_id) { where(committer_github_id: github_id) }
+  scope :claimed_by, ->(user) { joins(:patch_claims).where(patch_claims: { user_id: user.id }) }
+  scope :resolved_by, ->(user) { where(resolved_by_id: user.id) }
 
   def hot_ratio
     total = hot_count + not_count
@@ -67,32 +87,37 @@ class Patch < ActiveRecord::Base
     resolved_at.present?
   end
 
-  def resolve!(user:, status:, notes: nil)
+  def resolve!(user:, status:, notes: nil, changeset_url: nil)
     update!(
       resolved_at: Time.current,
       resolved_by_id: user.id,
       resolution_status: status,
       resolution_notes: notes,
+      resolution_changeset_url: changeset_url,
     )
   end
 
   def unresolve!
-    update!(resolved_at: nil, resolved_by_id: nil, resolution_status: nil, resolution_notes: nil)
+    update!(
+      resolved_at: nil,
+      resolved_by_id: nil,
+      resolution_status: nil,
+      resolution_notes: nil,
+      resolution_changeset_url: nil,
+    )
   end
 
-  def claimed_by?(user, purpose: nil)
+  def claimed_by?(user)
     return false unless user
-    scope = patch_claims.where(user_id: user.id)
-    scope = scope.where(purpose: purpose) if purpose
-    scope.exists?
+    patch_claims.exists?(user_id: user.id)
   end
 
-  def claim_for(user, purpose:, notes: nil)
-    patch_claims.create!(user: user, purpose: purpose, notes: notes)
+  def claim_for(user, notes: nil)
+    patch_claims.create!(user: user, notes: notes)
   end
 
-  def unclaim_for(user, purpose:)
-    patch_claims.where(user: user, purpose: purpose).destroy_all
+  def unclaim_for(user)
+    patch_claims.where(user: user).destroy_all
   end
 
   def match_committer_to_user!
