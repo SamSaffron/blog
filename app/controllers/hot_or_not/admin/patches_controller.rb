@@ -5,6 +5,7 @@ module HotOrNot
     class PatchesController < ApplicationController
       requires_login
       before_action :ensure_admin
+      before_action :set_current_user_github_info
       skip_before_action :check_xhr
       helper HotOrNotHelper
 
@@ -78,6 +79,29 @@ module HotOrNot
         Jobs.enqueue(:backfill_patch_committers)
         redirect_to "/hot-or-not/admin/patches",
                     notice: "Backfill job enqueued. Committer data will be populated in the background."
+      end
+
+      def add_voters_to_group
+        group = reviewer_group
+        unless group
+          redirect_to "/hot-or-not/admin/patches",
+                      alert: "No reviewers group configured. Set hot_or_not_reviewers_group in settings."
+          return
+        end
+
+        voter_ids = PatchRating.distinct.pluck(:user_id)
+        existing_member_ids = group.group_users.pluck(:user_id)
+        new_voter_ids = voter_ids - existing_member_ids
+        users_to_add = User.where(id: new_voter_ids)
+        added_count = 0
+
+        users_to_add.find_each do |user|
+          group.add(user)
+          added_count += 1
+        end
+
+        redirect_to "/hot-or-not/admin/patches",
+                    notice: "Added #{added_count} voters to the #{group.name} group."
       end
 
       def import
@@ -199,6 +223,15 @@ module HotOrNot
         raise Discourse::InvalidAccess unless current_user&.admin?
       end
 
+      def reviewer_group_ids
+        SiteSetting.hot_or_not_reviewers_groups_map
+      end
+
+      def reviewer_group
+        return nil if reviewer_group_ids.empty?
+        @reviewer_group ||= Group.find_by(id: reviewer_group_ids.first)
+      end
+
       def patch_params
         params.require(:patch).permit(
           :commit_hash,
@@ -211,6 +244,18 @@ module HotOrNot
           :repository,
           :active
         )
+      end
+
+      def set_current_user_github_info
+        return unless current_user
+
+        github_account =
+          UserAssociatedAccount.find_by(user_id: current_user.id, provider_name: "github")
+
+        if github_account
+          @current_user_github_id = github_account.provider_uid&.to_i
+          @current_user_github_username = github_account.info&.dig("nickname")
+        end
       end
     end
   end

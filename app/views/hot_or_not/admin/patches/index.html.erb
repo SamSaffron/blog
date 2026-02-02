@@ -12,6 +12,9 @@
       <%= form_tag("/hot-or-not/admin/patches/backfill_committers", method: :post, style: "display:inline") do %>
         <button type="submit" class="btn-secondary">Backfill Committers</button>
       <% end %>
+      <%= form_tag("/hot-or-not/admin/patches/add_voters_to_group", method: :post, style: "display:inline") do %>
+        <button type="submit" class="btn-secondary">Add Voters to Reviewers</button>
+      <% end %>
       <a href="/hot-or-not/admin/patches/import" class="btn-secondary">Bulk Import</a>
       <a href="/hot-or-not/admin/patches/new" class="btn-primary">Add Patch</a>
     </div>

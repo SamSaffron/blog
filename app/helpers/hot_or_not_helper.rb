@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 module HotOrNotHelper
+  # Builds query params for filter links, merging with current params
+  def filter_params(overrides = {})
+    current = params.permit(:status, :claimed, :claimed_by_me, :sort, :page).to_h.symbolize_keys
+    # Reset page to 1 when changing filters (unless explicitly setting page)
+    current[:page] = nil unless overrides.key?(:page)
+    merged = current.merge(overrides).compact_blank
+    merged.to_query
+  end
+
   # Returns the display name for a patch's committer
   def committer_display_name(patch)
     patch.committer&.username || patch.committer_github_username.presence ||

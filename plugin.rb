@@ -124,6 +124,7 @@ after_initialize do
   # Load Hot or Not models, controllers, and helpers
   require_relative("app/models/patch.rb")
   require_relative("app/models/patch_rating.rb")
+  require_relative("app/models/patch_claim.rb")
   require_relative("app/controllers/hot_or_not_controller.rb")
   require_relative("app/controllers/hot_or_not/admin/patches_controller.rb")
   require_relative("app/helpers/hot_or_not_helper.rb")
@@ -133,9 +134,12 @@ after_initialize do
     Topic.class_eval { has_many :topic_share_tokens, dependent: :destroy }
   end
 
-  # Add patch_ratings association to User model
+  # Add patch_ratings and patch_claims associations to User model
   reloadable_patch do |plugin|
-    User.class_eval { has_many :patch_ratings, dependent: :destroy }
+    User.class_eval do
+      has_many :patch_ratings, dependent: :destroy
+      has_many :patch_claims, dependent: :destroy
+    end
   end
 
   # Extend TopicViewSerializer
@@ -280,12 +284,18 @@ after_initialize do
 
     # Hot or Not routes (on main Discourse site)
     get "hot-or-not" => "hot_or_not#index"
+    get "hot-or-not/list" => "hot_or_not#list"
     get "hot-or-not/leaderboard" => "hot_or_not#leaderboard"
     get "hot-or-not/stats" => "hot_or_not#stats"
+    get "hot-or-not/my-patches" => "hot_or_not#my_patches"
     get "hot-or-not/by/:committer" => "hot_or_not#by_committer"
     get "hot-or-not/:id" => "hot_or_not#show"
     post "hot-or-not/:id/rate" => "hot_or_not#rate"
     get "hot-or-not/:id/download" => "hot_or_not#download"
+    post "hot-or-not/:id/claim" => "hot_or_not#claim"
+    delete "hot-or-not/:id/unclaim" => "hot_or_not#unclaim"
+    post "hot-or-not/:id/resolve" => "hot_or_not#resolve"
+    post "hot-or-not/:id/unresolve" => "hot_or_not#unresolve"
 
     scope path: "hot-or-not/admin", module: "hot_or_not/admin", as: "hot_or_not_admin" do
       resources :patches do
@@ -294,6 +304,7 @@ after_initialize do
           post :perform_import
           post :recount_all
           post :backfill_committers
+          post :add_voters_to_group
         end
         member { post :toggle_active }
       end

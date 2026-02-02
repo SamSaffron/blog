@@ -58,6 +58,11 @@
   text-decoration: none;
 }
 
+.hon-nav a.active {
+  color: #1e293b;
+  font-weight: 600;
+}
+
 .hon-nav .hon-back {
   color: #94a3b8;
   margin-left: var(--space-2);
@@ -945,8 +950,11 @@
   flex-shrink: 0;
   font-weight: 700;
   font-size: var(--text-base);
+  font-variant-numeric: tabular-nums;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--border-radius);
+  text-align: right;
+  width: 8ch;
 }
 
 .patch-list-item .patch-score.hot {
@@ -1849,6 +1857,306 @@
 }
 
 /* ============================================================================
+   Resolution Badges and Status
+   ============================================================================ */
+
+.resolution-badge {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.03em;
+}
+
+.resolution-fixed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.resolution-invalid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.resolution-info {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.resolution-info p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.resolution-info p:first-child {
+  margin-bottom: var(--space-2);
+}
+
+.resolution-notes {
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================================
+   Reviewer Actions
+   ============================================================================ */
+
+.reviewer-actions {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--border-radius);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.reviewer-actions h3 {
+  margin: 0 0 var(--space-4) 0;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: #166534;
+}
+
+.claim-buttons,
+.resolve-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.claim-btn,
+.unclaim-btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid;
+}
+
+.claim-btn {
+  background: white;
+  border-color: #22c55e;
+  color: #166534;
+}
+
+.claim-btn:hover {
+  background: #22c55e;
+  color: white;
+}
+
+.unclaim-btn {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.unclaim-btn:hover {
+  background: #f59e0b;
+  color: white;
+}
+
+.resolve-btn {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.resolve-btn-fixed {
+  background: #10b981;
+  color: white;
+}
+
+.resolve-btn-fixed:hover {
+  background: #059669;
+}
+
+.resolve-btn-invalid {
+  background: #f59e0b;
+  color: white;
+}
+
+.resolve-btn-invalid:hover {
+  background: #d97706;
+}
+
+.current-claims {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid #86efac;
+}
+
+.current-claims p {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: #166534;
+}
+
+.current-claims ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.current-claims li {
+  margin-bottom: var(--space-1);
+}
+
+/* Admin Actions (for unresolve button) */
+.admin-actions {
+  margin-bottom: var(--space-6);
+}
+
+/* Voting Disabled State */
+.voting-disabled {
+  text-align: center;
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.voting-disabled p:first-child {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin-bottom: var(--space-3);
+}
+
+/* Badge styles for resolution in patch lists */
+.badge-resolution {
+  text-transform: uppercase;
+}
+
+.badge-fixed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-invalid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* My Patches page subtitle */
+.my-patches-subtitle {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+/* ============================================================================
+   List Page Filters
+   ============================================================================ */
+
+.list-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.list-header {
+  margin-bottom: var(--space-6);
+}
+
+.list-header h1 {
+  margin: 0;
+}
+
+.list-filters {
+  background: var(--color-bg-secondary);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  min-width: 60px;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--border-radius);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  transition: all 0.15s ease;
+}
+
+.filter-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.filter-btn.active {
+  background: #1e293b;
+  color: #fff;
+  border-color: #1e293b;
+}
+
+.filter-btn.filter-fixed.active {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.filter-btn.filter-invalid.active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.list-stats {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-4);
+}
+
+/* Claimed badge */
+.badge-claimed {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Vote count in list */
+.patch-list-item .patch-votes {
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+  text-align: right;
+  width: 3ch;
+}
+
+/* ============================================================================
    Responsive
    ============================================================================ */
 
@@ -1885,5 +2193,14 @@
   .hot-or-not-page #headerLogo ul {
     flex-wrap: wrap;
     gap: var(--space-2);
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-group label {
+    min-width: auto;
   }
 }

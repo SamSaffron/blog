@@ -2,7 +2,9 @@
 
 class Patch < ActiveRecord::Base
   has_many :patch_ratings, dependent: :destroy
+  has_many :patch_claims, dependent: :destroy
   belongs_to :committer, class_name: "User", foreign_key: "committer_user_id", optional: true
+  belongs_to :resolved_by, class_name: "User", foreign_key: "resolved_by_id", optional: true
 
   before_validation :normalize_commit_hash
 
@@ -14,6 +16,7 @@ class Patch < ActiveRecord::Base
               message: "must be a valid git commit hash",
             }
   validates :title, presence: true
+  validates :resolution_status, inclusion: { in: %w[fixed invalid], allow_nil: true }
 
   private def normalize_commit_hash
     self.commit_hash = commit_hash&.downcase&.strip
@@ -22,6 +25,8 @@ class Patch < ActiveRecord::Base
   public
 
   scope :active, -> { where(active: true) }
+  scope :unresolved, -> { where(resolved_at: nil) }
+  scope :resolved, -> { where.not(resolved_at: nil) }
   scope :by_popularity, -> { order(Arel.sql("(hot_count + not_count) DESC")) }
   scope :by_hot_ratio,
         -> do
@@ -35,6 +40,7 @@ class Patch < ActiveRecord::Base
         -> { order(Arel.sql("ABS(hot_count - not_count) ASC, (hot_count + not_count) DESC")) }
   scope :authored_by, ->(user) { user ? where(committer_user_id: user.id) : none }
   scope :by_committer, ->(username) { where(committer_github_username: username) }
+  scope :by_github_id, ->(github_id) { where(committer_github_id: github_id) }
 
   def hot_ratio
     total = hot_count + not_count
@@ -57,10 +63,56 @@ class Patch < ActiveRecord::Base
     "discourse/#{repo_name}"
   end
 
+  def resolved?
+    resolved_at.present?
+  end
+
+  def resolve!(user:, status:, notes: nil)
+    update!(
+      resolved_at: Time.current,
+      resolved_by_id: user.id,
+      resolution_status: status,
+      resolution_notes: notes,
+    )
+  end
+
+  def unresolve!
+    update!(resolved_at: nil, resolved_by_id: nil, resolution_status: nil, resolution_notes: nil)
+  end
+
+  def claimed_by?(user, purpose: nil)
+    return false unless user
+    scope = patch_claims.where(user_id: user.id)
+    scope = scope.where(purpose: purpose) if purpose
+    scope.exists?
+  end
+
+  def claim_for(user, purpose:, notes: nil)
+    patch_claims.create!(user: user, purpose: purpose, notes: notes)
+  end
+
+  def unclaim_for(user, purpose:)
+    patch_claims.where(user: user, purpose: purpose).destroy_all
+  end
+
   def match_committer_to_user!
     return if committer_user_id.present?
 
-    # Try email match first
+    # Try GitHub ID match first (most reliable)
+    if committer_github_id.present?
+      account =
+        UserAssociatedAccount.find_by(
+          provider_name: "github",
+          provider_uid: committer_github_id.to_s,
+        )
+
+      if account&.user_id
+        update(committer_user_id: account.user_id)
+        return
+      end
+    end
+
+    # Try email match
     if committer_email.present?
       user = User.find_by_email(committer_email)
       if user
@@ -106,8 +158,8 @@ class Patch < ActiveRecord::Base
     update_columns(hot_count: hot, not_count: not_hot)
   end
 
-  def self.random_unrated_for(user)
-    scope = active
+  def self.random_unrated_for(user, base_scope: nil)
+    scope = base_scope || active.unresolved
     scope = scope.where.not(id: PatchRating.select(:patch_id).where(user_id: user.id)) if user
 
     # Use offset-based random selection for better performance on large tables

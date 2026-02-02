@@ -8,9 +8,9 @@ module ::Jobs
     READ_TIMEOUT = 30
 
     def execute(args)
-      # Only process patches that haven't been attempted yet
+      # Process patches where github_id is NULL (not yet attempted)
       Patch
-        .where(committer_email: nil, committer_name: nil, committer_github_username: nil)
+        .where(committer_github_id: nil)
         .find_each do |patch|
           result = fetch_and_store_committer(patch)
           break if result == :rate_limited
@@ -26,8 +26,7 @@ module ::Jobs
       headers = { "User-Agent" => "Discourse" }
 
       # Use GitHub token if configured
-      if SiteSetting.respond_to?(:blog_github_api_token) &&
-           SiteSetting.blog_github_api_token.present?
+      if SiteSetting.blog_github_api_token.present?
         headers["Authorization"] = "token #{SiteSetting.blog_github_api_token}"
       end
 
@@ -41,8 +40,8 @@ module ::Jobs
       end
 
       unless response.status == 200
-        # Mark as attempted with empty string to prevent re-fetching
-        patch.update(committer_email: "")
+        # Mark as attempted with -1 to prevent re-fetching
+        patch.update(committer_github_id: -1)
         return :not_found
       end
 
@@ -50,11 +49,12 @@ module ::Jobs
       author = data.dig("commit", "author")
       github_user = data["author"]
 
-      # Use empty string instead of nil to mark as attempted
+      # Use -1 for github_id if not found, real ID otherwise
       patch.update(
         committer_email: author&.dig("email") || "",
         committer_name: author&.dig("name") || "",
         committer_github_username: github_user&.dig("login") || "",
+        committer_github_id: github_user&.dig("id") || -1,
       )
 
       patch.match_committer_to_user!

@@ -1,5 +1,5 @@
 <% content_for :title do %>
-  Rate: <%= @patch.title.truncate(50) %>
+  Rate: <%= @patch.title.sub(/^Audit Fix:\s*/i, '').truncate(50) %>
 <% end %>
 
 <div class="patch-container">
@@ -27,6 +27,11 @@
       <% if @patch.issue_type.present? %>
         <span class="issue-type issue-type-<%= @patch.issue_type %>"><%= @patch.issue_type %></span>
       <% end %>
+      <% if @patch.resolved? %>
+        <span class="resolution-badge resolution-<%= @patch.resolution_status %>">
+          <%= @patch.resolution_status.upcase %>
+        </span>
+      <% end %>
       <% if @patch.audit_date.present? %>
         <span class="audit-date">Audited: <%= @patch.audit_date.strftime("%Y-%m-%d") %></span>
       <% end %>
@@ -34,8 +39,21 @@
         <span class="committer">by <%= committer_link(@patch) %></span>
       <% end %>
     </div>
-    <h1 class="patch-title"><%= @patch.title %></h1>
+    <h1 class="patch-title"><%= @patch.title.sub(/^Audit Fix:\s*/i, '') %></h1>
   </div>
+
+  <% if @patch.resolved? %>
+    <div class="resolution-info">
+      <p>
+        <strong>Resolved as <%= @patch.resolution_status %></strong>
+        by <%= @patch.resolved_by&.username || "Unknown" %>
+        on <%= @patch.resolved_at.strftime("%Y-%m-%d") %>
+      </p>
+      <% if @patch.resolution_notes.present? %>
+        <p class="resolution-notes"><%= @patch.resolution_notes %></p>
+      <% end %>
+    </div>
+  <% end %>
 
   <% if @patch.summary.present? %>
     <div class="patch-summary">
@@ -61,8 +79,79 @@
     </details>
   <% end %>
 
+  <% if @is_reviewer && !@patch.resolved? %>
+    <div class="reviewer-actions">
+      <h3>Reviewer Actions</h3>
+      <div class="claim-buttons">
+        <% if @patch.claimed_by?(current_user, purpose: 'review') %>
+          <%= form_tag("/hot-or-not/#{@patch.id}/unclaim", method: :delete, style: "display: inline") do %>
+            <%= hidden_field_tag :purpose, "review" %>
+            <button type="submit" class="unclaim-btn">Unclaim Review</button>
+          <% end %>
+        <% else %>
+          <%= form_tag("/hot-or-not/#{@patch.id}/claim", method: :post, style: "display: inline") do %>
+            <%= hidden_field_tag :purpose, "review" %>
+            <button type="submit" class="claim-btn">Claim for Review</button>
+          <% end %>
+        <% end %>
+
+        <% if @patch.claimed_by?(current_user, purpose: 'fix') %>
+          <%= form_tag("/hot-or-not/#{@patch.id}/unclaim", method: :delete, style: "display: inline") do %>
+            <%= hidden_field_tag :purpose, "fix" %>
+            <button type="submit" class="unclaim-btn">Unclaim Fix</button>
+          <% end %>
+        <% else %>
+          <%= form_tag("/hot-or-not/#{@patch.id}/claim", method: :post, style: "display: inline") do %>
+            <%= hidden_field_tag :purpose, "fix" %>
+            <button type="submit" class="claim-btn">Claim for Fix</button>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="resolve-buttons">
+        <%= form_tag("/hot-or-not/#{@patch.id}/resolve", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :status, "fixed" %>
+          <button type="submit" class="resolve-btn resolve-btn-fixed">Resolve as Fixed</button>
+        <% end %>
+        <%= form_tag("/hot-or-not/#{@patch.id}/resolve", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :status, "invalid" %>
+          <button type="submit" class="resolve-btn resolve-btn-invalid">Resolve as Invalid</button>
+        <% end %>
+      </div>
+
+      <% claims = @patch.patch_claims.includes(:user) %>
+      <% if claims.any? %>
+        <div class="current-claims">
+          <p><strong>Current claims:</strong></p>
+          <ul>
+            <% claims.each do |claim| %>
+              <li><%= claim.user.username %> - <%= claim.purpose %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @patch.resolved? && current_user&.admin? %>
+    <div class="admin-actions">
+      <%= form_tag("/hot-or-not/#{@patch.id}/unresolve", method: :post, style: "display: inline") do %>
+        <button type="submit" class="btn-secondary">Clear Resolution (Admin)</button>
+      <% end %>
+    </div>
+  <% end %>
+
   <div class="rating-section">
-    <% if @user_rating %>
+    <% if @patch.resolved? %>
+      <div class="voting-disabled">
+        <p>Voting is disabled for resolved patches.</p>
+        <p class="rating-stats">
+          <span class="hot-count"><%= @patch.hot_count %> HOT</span>
+          <span class="not-count"><%= @patch.not_count %> NOT</span>
+          <span class="hot-ratio">(<%= @patch.hot_ratio %>% approval)</span>
+        </p>
+      </div>
+    <% elsif @user_rating %>
       <div class="already-rated">
         <p>You rated this patch: <strong class="<%= @user_rating.is_hot ? 'vote-hot' : 'vote-not' %>"><%= @user_rating.is_hot ? "HOT" : "NOT" %></strong></p>
         <p class="rating-stats">
@@ -72,20 +161,31 @@
         </p>
         <p class="change-vote-label">Change your vote:</p>
       </div>
+
+      <div class="rating-buttons">
+        <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :is_hot, "true" %>
+          <button type="submit" class="rate-btn rate-hot <%= 'selected' if @user_rating&.is_hot %>">HOT</button>
+        <% end %>
+        <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :is_hot, "false" %>
+          <button type="submit" class="rate-btn rate-not <%= 'selected' if @user_rating && !@user_rating.is_hot %>">NOT</button>
+        <% end %>
+      </div>
     <% else %>
       <h3>What do you think?</h3>
-    <% end %>
 
-    <div class="rating-buttons">
-      <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
-        <%= hidden_field_tag :is_hot, "true" %>
-        <button type="submit" class="rate-btn rate-hot <%= 'selected' if @user_rating&.is_hot %>">HOT</button>
-      <% end %>
-      <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
-        <%= hidden_field_tag :is_hot, "false" %>
-        <button type="submit" class="rate-btn rate-not <%= 'selected' if @user_rating && !@user_rating.is_hot %>">NOT</button>
-      <% end %>
-    </div>
+      <div class="rating-buttons">
+        <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :is_hot, "true" %>
+          <button type="submit" class="rate-btn rate-hot">HOT</button>
+        <% end %>
+        <%= form_tag("/hot-or-not/#{@patch.id}/rate", method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :is_hot, "false" %>
+          <button type="submit" class="rate-btn rate-not">NOT</button>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 
   <div class="patch-progress">

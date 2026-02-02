@@ -17,11 +17,15 @@
     <header class="hon-header">
       <a href="/hot-or-not" class="hon-logo">Hot or Not</a>
       <nav class="hon-nav">
-        <a href="/hot-or-not">Rate</a>
-        <a href="/hot-or-not/leaderboard">Leaderboard</a>
-        <a href="/hot-or-not/stats">Stats</a>
+        <a href="/hot-or-not" class="<%= 'active' if request.path =~ %r{^/hot-or-not(/\d+)?$} %>">Rate</a>
+        <a href="/hot-or-not/list" class="<%= 'active' if request.path == '/hot-or-not/list' %>">List</a>
+        <a href="/hot-or-not/leaderboard" class="<%= 'active' if request.path.start_with?('/hot-or-not/leaderboard', '/hot-or-not/by/') %>">Leaderboard</a>
+        <a href="/hot-or-not/stats" class="<%= 'active' if request.path == '/hot-or-not/stats' %>">Stats</a>
+        <% if @current_user_github_username %>
+        <a href="/hot-or-not/my-patches" class="<%= 'active' if request.path == '/hot-or-not/my-patches' %>"><%= current_user.username.capitalize %></a>
+        <% end %>
         <% if current_user&.admin? %>
-        <a href="/hot-or-not/admin/patches">Admin</a>
+        <a href="/hot-or-not/admin/patches" class="<%= 'active' if request.path.start_with?('/hot-or-not/admin') %>">Admin</a>
         <% end %>
         <a href="/" class="hon-back">Forum</a>
       </nav>

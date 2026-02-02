@@ -3,6 +3,7 @@
 class HotOrNotController < ApplicationController
   skip_before_action :check_xhr
   before_action :ensure_logged_in
+  before_action :set_current_user_github_info
   helper HotOrNotHelper
 
   layout "hot_or_not"
@@ -22,6 +23,7 @@ class HotOrNotController < ApplicationController
     @patch = current_user&.admin? ? Patch.find(params[:id]) : Patch.active.find(params[:id])
     @user_rating = @patch.user_rating(current_user)
     @user_stats = PatchRating.user_stats(current_user)
+    @is_reviewer = is_reviewer?
 
     # Navigation - order by id for consistent prev/next (active only)
     @prev_patch = Patch.active.where("id < ?", @patch.id).order(id: :desc).first
@@ -30,6 +32,12 @@ class HotOrNotController < ApplicationController
 
   def rate
     @patch = Patch.active.find(params[:id])
+
+    if @patch.resolved?
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Cannot vote on resolved patches"
+      return
+    end
+
     @rating = PatchRating.find_or_initialize_by(patch: @patch, user: current_user)
     @rating.is_hot = params[:is_hot] == "true"
 
@@ -44,6 +52,125 @@ class HotOrNotController < ApplicationController
     else
       redirect_to "/hot-or-not/#{@patch.id}", alert: "Error saving rating"
     end
+  end
+
+  def my_patches
+    unless @current_user_github_id
+      redirect_to "/hot-or-not", alert: "Link your GitHub account to see your patches"
+      return
+    end
+
+    @patches = Patch.active.by_github_id(@current_user_github_id).by_hot_ratio
+    @committer_stats = calculate_committer_stats(@patches)
+    @user_stats = PatchRating.user_stats(current_user)
+  end
+
+  def list
+    @patches = Patch.active.includes(:committer, :patch_claims)
+
+    # Apply filters
+    case params[:status]
+    when "resolved"
+      @patches = @patches.resolved
+    when "unresolved"
+      @patches = @patches.unresolved
+    when "fixed"
+      @patches = @patches.where(resolution_status: "fixed")
+    when "invalid"
+      @patches = @patches.where(resolution_status: "invalid")
+    end
+
+    if params[:claimed] == "1"
+      @patches = @patches.joins(:patch_claims).distinct
+    elsif params[:claimed] == "0"
+      @patches = @patches.left_joins(:patch_claims).where(patch_claims: { id: nil })
+    end
+
+    if params[:claimed_by_me] == "1" && current_user
+      @patches = @patches.joins(:patch_claims).where(patch_claims: { user_id: current_user.id }).distinct
+    end
+
+    # Sorting
+    @patches = case params[:sort]
+    when "hot"
+      @patches.by_hot_ratio
+    when "controversial"
+      @patches.most_controversial
+    when "newest"
+      @patches.order(created_at: :desc)
+    when "oldest"
+      @patches.order(created_at: :asc)
+    else
+      @patches.order(Arel.sql("(hot_count + not_count) DESC, created_at DESC"))
+    end
+
+    # Pagination
+    @page = (params[:page] || 1).to_i
+    @per_page = 50
+    @total_count = @patches.count
+    @total_pages = (@total_count.to_f / @per_page).ceil
+    @patches = @patches.offset((@page - 1) * @per_page).limit(@per_page)
+
+    @user_stats = PatchRating.user_stats(current_user)
+    @is_reviewer = is_reviewer?
+    @current_filter = params[:status]
+    @current_sort = params[:sort] || "default"
+  end
+
+  def claim
+    ensure_reviewer!
+    @patch = Patch.active.find(params[:id])
+
+    if @patch.resolved?
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Cannot claim resolved patches"
+      return
+    end
+
+    purpose = params[:purpose]
+
+    if PatchClaim::PURPOSES.exclude?(purpose)
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Invalid claim purpose"
+      return
+    end
+
+    if @patch.claimed_by?(current_user, purpose: purpose)
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "You have already claimed this patch for #{purpose}"
+      return
+    end
+
+    @patch.claim_for(current_user, purpose: purpose, notes: params[:notes])
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Claimed patch for #{purpose}"
+  end
+
+  def unclaim
+    ensure_reviewer!
+    @patch = Patch.active.find(params[:id])
+    purpose = params[:purpose]
+
+    @patch.unclaim_for(current_user, purpose: purpose)
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Unclaimed patch"
+  end
+
+  def resolve
+    ensure_reviewer!
+    @patch = Patch.active.find(params[:id])
+    status = params[:status]
+
+    if %w[fixed invalid].exclude?(status)
+      redirect_to "/hot-or-not/#{@patch.id}", alert: "Invalid resolution status"
+      return
+    end
+
+    @patch.resolve!(user: current_user, status: status, notes: params[:notes])
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch marked as #{status}"
+  end
+
+  def unresolve
+    raise Discourse::InvalidAccess unless current_user&.admin?
+
+    @patch = Patch.find(params[:id])
+    @patch.unresolve!
+    redirect_to "/hot-or-not/#{@patch.id}", notice: "Patch resolution cleared"
   end
 
   def leaderboard
@@ -113,5 +240,31 @@ class HotOrNotController < ApplicationController
   def ensure_logged_in
     return if current_user
     redirect_to("/login", allow_other_host: false) && return
+  end
+
+  def reviewer_group_ids
+    SiteSetting.hot_or_not_reviewers_groups_map
+  end
+
+  def is_reviewer?
+    return false unless current_user
+    return false if reviewer_group_ids.empty?
+    current_user.in_any_groups?(reviewer_group_ids)
+  end
+
+  def ensure_reviewer!
+    raise Discourse::InvalidAccess unless is_reviewer?
+  end
+
+  def set_current_user_github_info
+    return unless current_user
+
+    github_account =
+      UserAssociatedAccount.find_by(user_id: current_user.id, provider_name: "github")
+
+    if github_account
+      @current_user_github_id = github_account.provider_uid&.to_i
+      @current_user_github_username = github_account.info&.dig("nickname")
+    end
   end
 end
