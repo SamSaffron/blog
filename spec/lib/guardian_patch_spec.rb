@@ -46,7 +46,7 @@ RSpec.describe GuardianPatch do
     end
 
     it "denies anonymous users to see topics with wrong topic id" do
-      other_topic = Fabricate(:topic)
+      other_topic = Fabricate(:topic, category: category)
       Thread.current[:share_token_value] = token.token
       guardian = Guardian.new(nil)
 

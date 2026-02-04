@@ -14,7 +14,3 @@ plugins:
   blog_github_api_token:
     default: ""
     secret: true
-  patch_triage_reviewers_groups:
-    type: group_list
-    default: ""
-    allow_any: false

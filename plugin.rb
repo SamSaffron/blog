@@ -121,28 +121,9 @@ after_initialize do
   require_relative("app/controllers/blog/topic_share_tokens_controller.rb")
   require_relative("lib/topic_serializer_extension.rb")
 
-  # Load Patch Triage models, controllers, and helpers
-  require_relative("app/models/patch.rb")
-  require_relative("app/models/patch_rating.rb")
-  require_relative("app/models/patch_claim.rb")
-  require_relative("app/models/patch_claim_log.rb")
-  require_relative("app/controllers/patch_triage_controller.rb")
-  require_relative("app/controllers/patch_triage/admin/patches_controller.rb")
-  require_relative("app/helpers/patch_triage_helper.rb")
-  require_relative("lib/patch_download_token.rb")
-
   # Add association to Topic model
   reloadable_patch do |plugin|
     Topic.class_eval { has_many :topic_share_tokens, dependent: :destroy }
-  end
-
-  # Add patch_ratings and patch_claims associations to User model
-  reloadable_patch do |plugin|
-    User.class_eval do
-      has_many :patch_ratings, dependent: :destroy
-      has_many :patch_claims, dependent: :destroy
-      has_many :patch_claim_logs, dependent: :destroy
-    end
   end
 
   # Extend TopicViewSerializer
@@ -220,7 +201,6 @@ after_initialize do
 
   require_relative("app/jobs/scheduled/blog_update_twitter.rb")
   require_relative("app/jobs/regular/corrupt_a_wish.rb")
-  require_relative("app/jobs/regular/backfill_patch_committers.rb")
   require_relative("lib/gpt_dispatcher.rb")
 
   require_dependency "plugin/filter"
@@ -284,51 +264,5 @@ after_initialize do
                 only: %i[index create destroy],
                 controller: "blog/topic_share_tokens"
     end
-
-    # Patch Triage routes (on main Discourse site)
-    get "patch-triage" => "patch_triage#index"
-    get "patch-triage/list" => "patch_triage#list"
-    get "patch-triage/leaderboard" => "patch_triage#leaderboard"
-    get "patch-triage/stats" => "patch_triage#stats"
-    get "patch-triage/my-patches" => "patch_triage#my_patches"
-    get "patch-triage/users/:username" => "patch_triage#user_profile"
-    get "patch-triage/by/:committer" => "patch_triage#by_committer"
-    get "patch-triage/:id" => "patch_triage#show", constraints: { id: /\d+/ }
-    post "patch-triage/:id/rate" => "patch_triage#rate"
-    get "patch-triage/:id/download" => "patch_triage#download"
-    post "patch-triage/:id/generate-download-token" => "patch_triage#generate_download_token"
-    get "patch-triage/p/:token" => "patch_triage#token_download"
-    post "patch-triage/:id/claim" => "patch_triage#claim"
-    delete "patch-triage/:id/unclaim" => "patch_triage#unclaim"
-    post "patch-triage/:id/resolve" => "patch_triage#resolve"
-    post "patch-triage/:id/unresolve" => "patch_triage#unresolve"
-
-    scope path: "patch-triage/admin", module: "patch_triage/admin", as: "patch_triage_admin" do
-      resources :patches do
-        collection do
-          get :import
-          post :perform_import
-          post :recount_all
-          post :backfill_committers
-          post :add_voters_to_group
-        end
-        member { post :toggle_active }
-      end
-    end
-
-    # Backward compatibility redirects from old hot-or-not URLs
-    get "hot-or-not" => redirect("/patch-triage")
-    get "hot-or-not/list" => redirect("/patch-triage/list")
-    get "hot-or-not/leaderboard" => redirect("/patch-triage/leaderboard")
-    get "hot-or-not/stats" => redirect("/patch-triage/stats")
-    get "hot-or-not/my-patches" => redirect("/patch-triage/my-patches")
-    get "hot-or-not/users/:username" => redirect("/patch-triage/users/%{username}")
-    get "hot-or-not/by/:committer" => redirect("/patch-triage/by/%{committer}")
-    get "hot-or-not/:id" => redirect("/patch-triage/%{id}"), constraints: { id: /\d+/ }
-    get "hot-or-not/p/:token" => redirect("/patch-triage/p/%{token}")
-    get "hot-or-not/admin/patches" => redirect("/patch-triage/admin/patches")
-    get "hot-or-not/admin/patches/import" => redirect("/patch-triage/admin/patches/import")
-    get "hot-or-not/admin/patches/new" => redirect("/patch-triage/admin/patches/new")
-    get "hot-or-not/admin/patches/:id/edit" => redirect("/patch-triage/admin/patches/%{id}/edit")
   end
 end
