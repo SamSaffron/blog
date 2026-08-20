@@ -4,6 +4,7 @@ require_dependency 'archetype'
 module Blog
   class ApplicationController < ActionController::Base
     include CurrentUser
+    protect_from_forgery
     layout "2col"
     before_action :cache_anon
 
